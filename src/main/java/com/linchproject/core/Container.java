@@ -38,6 +38,19 @@ public class Container {
     }
 
     /**
+     * Adds a component by object to the container by
+     * given key.
+     *
+     * @param key
+     * @param object
+     */
+    public void add(String key, Object object) {
+        this.classes.put(key, object.getClass());
+        this.objects.put(key, object);
+        autowire(object);
+    }
+
+    /**
      * Returns the component instance for given key.
      *
      * @param key the unique component key
@@ -66,12 +79,15 @@ public class Container {
      * @param object object to be autowired
      */
     public void autowire(Object object) {
-        for (Map.Entry<String, Class<?>> entry : this.classes.entrySet()) {
-            String key = entry.getKey();
-            Class<?> clazz = entry.getValue();
+        for (String key : this.classes.keySet()) {
             try {
-                Method method = object.getClass().getMethod(getSetterName(key), clazz);
-                method.invoke(object, get(key));
+                String setterName = getSetterName(key);
+                for (Method method : object.getClass().getMethods()) {
+                    if (setterName.equals(method.getName())) {
+                        method.invoke(object, get(key));
+                    }
+                }
+
             } catch (ReflectiveOperationException e) {
                 // ignore
             }

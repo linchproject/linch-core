@@ -2,6 +2,7 @@ package com.linchproject.core;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -39,6 +40,10 @@ public class ContainerTest {
 
         assertNotNull(object);
         assertTrue(object instanceof A);
+
+        Object myComponent = new Object();
+        container.add("myComponent", myComponent);
+        assertEquals(myComponent, container.get("myComponent"));
     }
 
     @Test

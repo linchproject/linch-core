@@ -18,15 +18,15 @@ public class InvokerTest {
 
         Result result;
 
-        result = invoker.invoke("my", "index", null);
+        result = invoker.invoke(new Route("my", "index"));
         assertTrue(result instanceof Ok);
         assertEquals("index", ((Ok) result).getContent());
 
-        result = invoker.invoke("invalid", "index", null);
+        result = invoker.invoke(new Route("invalid", "index"));
         assertTrue(result instanceof Error);
         assertTrue(((Error) result).getException() instanceof ClassNotFoundException);
 
-        result = invoker.invoke("my", "invalid", null);
+        result = invoker.invoke(new Route("my", "invalid"));
         assertTrue(result instanceof Error);
         assertTrue(((Error) result).getException() instanceof NoSuchMethodException);
     }

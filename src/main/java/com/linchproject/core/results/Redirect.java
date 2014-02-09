@@ -1,26 +1,28 @@
 package com.linchproject.core.results;
 
 import com.linchproject.core.Result;
+import com.linchproject.core.Route;
 
 /**
  * @author Georg Schmidl
  */
 public class Redirect implements Result {
 
-    private String target;
+    private Route route;
 
     public Redirect() {
+        this(Route.getDefaultRoute());
     }
 
-    public Redirect(String target) {
-        this.target = target;
+    public Redirect(Route route) {
+        this.route = route;
     }
 
-    public String getTarget() {
-        return target;
+    public Route getRoute() {
+        return route;
     }
 
-    public void setTarget(String target) {
-        this.target = target;
+    public void setRoute(Route route) {
+        this.route = route;
     }
 }

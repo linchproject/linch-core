@@ -21,13 +21,6 @@ public class Container {
         this.objects = new HashMap<String, Object>();
     }
 
-    public static Container getInstance() {
-        if (instance == null) {
-            instance = new Container();
-        }
-        return instance;
-    }
-
     /**
      * Adds a component to the container by given key.
      *
@@ -87,5 +80,12 @@ public class Container {
 
     private String getSetterName(String key) {
         return "set" + key.substring(0, 1).toUpperCase() + key.substring(1, key.length());
+    }
+
+    public static Container getInstance() {
+        if (instance == null) {
+            instance = new Container();
+        }
+        return instance;
     }
 }

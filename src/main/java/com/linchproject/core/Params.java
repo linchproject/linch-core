@@ -1,5 +1,6 @@
 package com.linchproject.core;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -9,7 +10,13 @@ import java.util.Map;
  */
 public class Params {
 
+    private static Params emptyParams;
+
     private Map<String, String[]> map;
+
+    public Params() {
+        this(new HashMap<String, String[]>());
+    }
 
     public Params(Map<String, String[]> map) {
         this.map = map;
@@ -43,5 +50,12 @@ public class Params {
      */
     public Map<String, String[]> getMap() {
         return map;
+    }
+
+    public static Params getEmptyParams() {
+        if (emptyParams == null) {
+            emptyParams = new Params();
+        }
+        return emptyParams;
     }
 }

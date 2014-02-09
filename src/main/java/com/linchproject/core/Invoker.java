@@ -17,8 +17,12 @@ public class Invoker {
         this.controllerPackage = controllerPackage;
     }
 
-    public Result invoke(String controller, String action, Params params) {
-        Result result = null;
+    public Result invoke(Route route) {
+        String controller = route.getController();
+        String action = route.getAction();
+        Params params = route.getParams();
+
+        Result result;
 
         try {
             Class<?> controllerClass = this.classLoader.loadClass(getControllerClassName(controller));

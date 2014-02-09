@@ -1,6 +1,6 @@
 package com.linchproject.core;
 
-import com.linchproject.core.results.Ok;
+import com.linchproject.core.results.Success;
 
 import java.util.Map;
 
@@ -11,20 +11,20 @@ public class Controller {
 
     protected Renderer renderer;
 
-    protected Result ok() {
-        return new Ok(null);
+    protected Result success() {
+        return new Success(null);
     }
 
-    protected Result ok(String content) {
-        return new Ok(content);
+    protected Result success(String content) {
+        return new Success(content);
     }
 
     protected Result render(String template) {
-        return ok(renderer.render(template, null));
+        return success(renderer.render(template, null));
     }
 
     protected Result render(String template, Map<String, Object> context) {
-        return ok(renderer.render(template, context));
+        return success(renderer.render(template, context));
     }
 
     public void setRenderer(Renderer renderer) {

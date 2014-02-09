@@ -5,14 +5,15 @@ import com.linchproject.core.Result;
 /**
  * @author Georg Schmidl
  */
-public class Ok implements Result {
+public class Success implements Result {
 
     private String content;
 
-    public Ok() {
+    public Success() {
+        this(null);
     }
 
-    public Ok(String content) {
+    public Success(String content) {
         this.content = content;
     }
 

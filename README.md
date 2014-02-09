@@ -5,6 +5,6 @@
     public class HelloWorldController extends Controller {
 
         Result index(Params params) {
-            return ok("Hello World");
+            return success("Hello World");
         }
     }

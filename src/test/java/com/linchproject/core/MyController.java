@@ -6,6 +6,6 @@ package com.linchproject.core;
 public class MyController extends Controller {
 
     public Result index(Params params) {
-        return ok("index");
+        return success("index");
     }
 }

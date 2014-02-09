@@ -2,6 +2,7 @@ package com.linchproject.core;
 
 import com.linchproject.core.results.Error;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -30,11 +31,27 @@ public class Invoker {
 
             Container.getInstance().autowire(controllerInstance);
 
-            Method actionMethod = controllerClass.getMethod(action, Params.class);
-            result = (Result) actionMethod.invoke(controllerInstance, params);
+            try {
+                Method actionMethod = controllerClass.getMethod(action, Params.class);
+                result = (Result) actionMethod.invoke(controllerInstance, params);
 
-        } catch (ReflectiveOperationException e) {
-            result = new Error(e);
+            } catch (NoSuchMethodException e) {
+                result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'", e);
+            } catch (IllegalAccessException e) {
+                result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
+            } catch (InvocationTargetException e) {
+                result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
+            }
+
+        } catch (ClassNotFoundException e) {
+            result = new Error("Cannot find controller '" + controller + "'", e);
+        } catch (IllegalAccessException e) {
+            result = new Error("Cannot access controller '" + controller + "'", e);
+        } catch (InstantiationException e) {
+            result = new Error("Cannot instantiate controller '" + controller + "'", e);
+
+        } catch (Exception e) {
+            result = new Error("An error occurred", e);
         }
 
         return result;

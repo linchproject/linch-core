@@ -1,7 +1,7 @@
 package com.linchproject.core;
 
 import com.linchproject.core.results.Error;
-import com.linchproject.core.results.Ok;
+import com.linchproject.core.results.Success;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,8 +19,8 @@ public class InvokerTest {
         Result result;
 
         result = invoker.invoke(new Route("my", "index"));
-        assertTrue(result instanceof Ok);
-        assertEquals("index", ((Ok) result).getContent());
+        assertTrue(result instanceof Success);
+        assertEquals("index", ((Success) result).getContent());
 
         result = invoker.invoke(new Route("invalid", "index"));
         assertTrue(result instanceof Error);

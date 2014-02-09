@@ -1,6 +1,6 @@
 package com.linchproject.core;
 
-import com.linchproject.core.results.Ok;
+import com.linchproject.core.results.Success;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -23,11 +23,11 @@ public class ControllerTest {
     public class MyController extends Controller {
 
         public Result hello(Params params) {
-            return ok("Hello");
+            return success("Hello");
         }
 
         public Result nothing(Params params) {
-            return ok();
+            return success();
         }
 
         public Result name(Params params) {
@@ -47,12 +47,12 @@ public class ControllerTest {
         Result result;
 
         result = this.myController.hello(null);
-        assertTrue(result instanceof Ok);
-        assertEquals("Hello", ((Ok) result).getContent());
+        assertTrue(result instanceof Success);
+        assertEquals("Hello", ((Success) result).getContent());
 
         result = this.myController.nothing(null);
-        assertTrue(result instanceof Ok);
-        assertNull(((Ok) result).getContent());
+        assertTrue(result instanceof Success);
+        assertNull(((Success) result).getContent());
 
     }
 
@@ -64,11 +64,11 @@ public class ControllerTest {
         Result result;
 
         result = this.myController.name(null);
-        assertTrue(result instanceof Ok);
+        assertTrue(result instanceof Success);
         verify(renderer).render(eq("name"), argThat(new ContextContains("name", "John")));
 
         result = this.myController.noName(null);
-        assertTrue(result instanceof Ok);
+        assertTrue(result instanceof Success);
         verify(renderer).render(eq("name"), isNull(Map.class));
     }
 }

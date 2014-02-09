@@ -9,11 +9,17 @@ import java.util.Map;
  */
 public class Controller {
 
+    protected Renderer renderer;
+
     protected Result render(String template) {
-        return new Ok(Renderer.render(template, null));
+        return new Ok(renderer.render(template, null));
     }
 
     protected Result render(String template, Map<String, Object> context) {
-        return new Ok(Renderer.render(template, context));
+        return new Ok(renderer.render(template, context));
+    }
+
+    public void setRenderer(Renderer renderer) {
+        this.renderer = renderer;
     }
 }

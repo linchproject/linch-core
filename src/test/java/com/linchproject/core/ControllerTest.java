@@ -6,8 +6,11 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Georg Schmidl
@@ -27,10 +30,13 @@ public class ControllerTest {
 
     @Test
     public void testRender() throws Exception {
+        Renderer renderer = mock(Renderer.class);
+
         MyController myController = new MyController();
+        myController.setRenderer(renderer);
         Result result = myController.index(null);
 
         assertTrue(result instanceof Ok);
-        assertEquals("John", ((Ok) result).getContent());
+        verify(renderer).render(eq("name"), argThat(new ContextContains("name", "John")));
     }
 }

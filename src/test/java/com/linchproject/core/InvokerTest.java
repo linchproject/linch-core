@@ -24,10 +24,8 @@ public class InvokerTest {
 
         result = invoker.invoke(new Route("invalid", "index"));
         assertTrue(result instanceof Error);
-        assertTrue(((Error) result).getException() instanceof ClassNotFoundException);
 
         result = invoker.invoke(new Route("my", "invalid"));
         assertTrue(result instanceof Error);
-        assertTrue(((Error) result).getException() instanceof NoSuchMethodException);
     }
 }

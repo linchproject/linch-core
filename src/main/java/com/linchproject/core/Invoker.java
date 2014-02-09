@@ -36,7 +36,7 @@ public class Invoker {
                 result = (Result) actionMethod.invoke(controllerInstance, params);
 
             } catch (NoSuchMethodException e) {
-                result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'", e);
+                result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
             } catch (IllegalAccessException e) {
                 result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
             } catch (InvocationTargetException e) {
@@ -44,7 +44,7 @@ public class Invoker {
             }
 
         } catch (ClassNotFoundException e) {
-            result = new Error("Cannot find controller '" + controller + "'", e);
+            result = new Error("Cannot find controller '" + controller + "'");
         } catch (IllegalAccessException e) {
             result = new Error("Cannot access controller '" + controller + "'", e);
         } catch (InstantiationException e) {

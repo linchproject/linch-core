@@ -33,7 +33,7 @@ public class Container {
      * @param key the unique component key
      * @param clazz the component class
      */
-    void add(String key, Class<?> clazz) {
+    public void add(String key, Class<?> clazz) {
         this.classes.put(key, clazz);
     }
 
@@ -43,7 +43,7 @@ public class Container {
      * @param key the unique component key
      * @return instance of the component
      */
-    Object get(String key) {
+    public Object get(String key) {
         Object object = this.objects.get(key);
         if (object == null) {
             Class<?> clazz = classes.get(key);
@@ -65,7 +65,7 @@ public class Container {
      *
      * @param object object to be autowired
      */
-    void autowire(Object object) {
+    public void autowire(Object object) {
         for (Map.Entry<String, Class<?>> entry : this.classes.entrySet()) {
             String key = entry.getKey();
             Class<?> clazz = entry.getValue();

@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class MustacheRenderer implements Renderer {
 
-    public  String render(String template, Map<String, Object> context) {
+    public String render(String template, Map<String, Object> context) {
         StringWriter writer = new StringWriter();
 
         MustacheFactory mf = new DefaultMustacheFactory();

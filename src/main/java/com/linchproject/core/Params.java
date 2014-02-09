@@ -13,12 +13,12 @@ public class Params {
         this.map = map;
     }
 
-    public String get(String key) {
+    public String getValue(String key) {
         String[] value = map.get(key);
         return value != null && value.length > 0? value[0]: null;
     }
 
-    public String[] getAll(String key) {
+    public String[] getValues(String key) {
         return map.get(key);
     }
 

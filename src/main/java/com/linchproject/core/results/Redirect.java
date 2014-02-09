@@ -5,7 +5,7 @@ import com.linchproject.core.Result;
 /**
  * @author Georg Schmidl
  */
-public class Redirect extends Result {
+public class Redirect implements Result {
 
     private String target;
 

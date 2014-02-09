@@ -5,7 +5,7 @@ import com.linchproject.core.Result;
 /**
  * @author Georg Schmidl
  */
-public class Ok extends Result {
+public class Ok implements Result {
 
     private String content;
 

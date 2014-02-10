@@ -7,5 +7,5 @@ import java.util.Map;
  */
 public interface Renderer {
 
-    String render(String template, Map<String, Object> context);
+    String render(String template, Map<String, Object> context, Route route);
 }

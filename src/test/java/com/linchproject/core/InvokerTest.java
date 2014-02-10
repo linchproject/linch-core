@@ -18,14 +18,23 @@ public class InvokerTest {
 
         Result result;
 
-        result = invoker.invoke(new Route("my", "index"));
+        Route route = new RouteImpl();
+        route.setController("my");
+        route.setAction("index");
+        result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("index", ((Success) result).getContent());
 
-        result = invoker.invoke(new Route("invalid", "index"));
+        route = new RouteImpl();
+        route.setController("invalid");
+        route.setAction("index");
+        result = invoker.invoke(route);
         assertTrue(result instanceof Error);
 
-        result = invoker.invoke(new Route("my", "invalid"));
+        route = new RouteImpl();
+        route.setController("my");
+        route.setAction("invalid");
+        result = invoker.invoke(route);
         assertTrue(result instanceof Error);
     }
 }

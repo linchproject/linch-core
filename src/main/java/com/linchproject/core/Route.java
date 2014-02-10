@@ -3,9 +3,7 @@ package com.linchproject.core;
 /**
  * @author Georg Schmidl
  */
-public class Route {
-
-    private static Route defaultRoute;
+public abstract class Route {
 
     private static final String DEFAULT_CONTROLLER = "app";
     private static final String DEFAULT_ACTION = "index";
@@ -13,20 +11,6 @@ public class Route {
     private String controller;
     private String action;
     private Params params;
-
-    public Route() {
-        this(null, null);
-    }
-
-    public Route(String controller, String action) {
-        this(controller, action, null);
-    }
-
-    public Route(String controller, String action, Params params) {
-        this.controller = controller;
-        this.action = action;
-        this.params = params;
-    }
 
     public String getController() {
         return controller == null? DEFAULT_CONTROLLER: controller;
@@ -52,10 +36,14 @@ public class Route {
         this.params = params;
     }
 
-    public static Route getDefaultRoute() {
-        if (defaultRoute == null) {
-            defaultRoute = new Route();
-        }
-        return defaultRoute;
+    public abstract String getUrl();
+
+    public Route createRoute() {
+        Route route = newRoute();
+        route.setController(this.controller);
+        route.setAction(this.action);
+        return route;
     }
+
+    protected abstract Route newRoute();
 }

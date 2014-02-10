@@ -7,9 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -65,10 +63,10 @@ public class ControllerTest {
 
         result = this.myController.name(null);
         assertTrue(result instanceof Success);
-        verify(renderer).render(eq("name"), argThat(new ContextContains("name", "John")));
+        verify(renderer).render(eq("name"), argThat(new ContextContains("name", "John")), any(Route.class));
 
         result = this.myController.noName(null);
         assertTrue(result instanceof Success);
-        verify(renderer).render(eq("name"), isNull(Map.class));
+        verify(renderer).render(eq("name"), isNull(Map.class), any(Route.class));
     }
 }

@@ -9,7 +9,9 @@ import java.util.Map;
  */
 public class Controller {
 
-    protected Renderer renderer;
+    protected Route route;
+
+    private Renderer renderer;
 
     protected Result success() {
         return new Success(null);
@@ -20,11 +22,15 @@ public class Controller {
     }
 
     protected Result render(String template) {
-        return success(renderer.render(template, null));
+        return success(renderer.render(template, null, route));
     }
 
     protected Result render(String template, Map<String, Object> context) {
-        return success(renderer.render(template, context));
+        return success(renderer.render(template, context, route));
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
     }
 
     public void setRenderer(Renderer renderer) {

@@ -11,7 +11,7 @@ public class Redirect implements Result {
     private Route route;
 
     public Redirect() {
-        this(Route.getDefaultRoute());
+        this(null);
     }
 
     public Redirect(Route route) {

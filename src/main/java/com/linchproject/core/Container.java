@@ -1,5 +1,6 @@
 package com.linchproject.core;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +66,9 @@ public class Container {
                     object = clazz.newInstance();
                     this.objects.put(key, object);
                     autowire(object);
-                } catch (ReflectiveOperationException e) {
+                } catch (InstantiationException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
                     // ignore
                 }
             }
@@ -88,7 +91,9 @@ public class Container {
                     }
                 }
 
-            } catch (ReflectiveOperationException e) {
+            } catch (InvocationTargetException e) {
+                // ignore
+            } catch (IllegalAccessException e) {
                 // ignore
             }
         }

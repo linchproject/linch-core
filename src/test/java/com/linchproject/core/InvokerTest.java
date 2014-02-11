@@ -14,7 +14,7 @@ public class InvokerTest {
 
     @Test
     public void testInvoke() throws Exception {
-        Invoker invoker = new Invoker(getClass().getClassLoader(), "com.linchproject.core");
+        Invoker invoker = new Invoker(getClass().getClassLoader(), "com.linchproject.core", new Container());
 
         Result result;
 

@@ -34,7 +34,7 @@ public class ContainerTest {
 
     @Test
     public void testGet() throws Exception {
-        Container container = Container.getInstance();
+        Container container = new Container();
         container.add("a", A.class);
         Object object = container.get("a");
 
@@ -48,7 +48,7 @@ public class ContainerTest {
 
     @Test
     public void testAutowire() throws Exception {
-        Container container = Container.getInstance();
+        Container container = new Container();
         container.add("a", A.class);
         container.add("b", B.class);
 

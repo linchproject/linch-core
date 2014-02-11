@@ -12,10 +12,12 @@ public class Invoker {
 
     private ClassLoader classLoader;
     private String controllerPackage;
+    private Container container;
 
-    public Invoker(ClassLoader classLoader, String controllerPackage) {
+    public Invoker(ClassLoader classLoader, String controllerPackage, Container container) {
         this.classLoader = classLoader;
         this.controllerPackage = controllerPackage;
+        this.container = container;
     }
 
     public Result invoke(Route route) {
@@ -29,7 +31,7 @@ public class Invoker {
             Class<?> controllerClass = this.classLoader.loadClass(getControllerClassName(controller));
             Object controllerInstance = controllerClass.newInstance();
 
-            Container.getInstance().autowire(controllerInstance);
+            this.container.autowire(controllerInstance);
 
             try {
                 Method actionMethod = controllerClass.getMethod(action, Params.class);

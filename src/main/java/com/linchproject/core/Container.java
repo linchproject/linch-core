@@ -12,12 +12,10 @@ import java.util.Map;
  */
 public class Container {
 
-    private static Container instance;
-
     private Map<String, Class<?>> classes;
     private Map<String, Object> objects;
 
-    protected Container() {
+    public Container() {
         this.classes = new HashMap<String, Class<?>>();
         this.objects = new HashMap<String, Object>();
     }
@@ -101,12 +99,5 @@ public class Container {
 
     private String getSetterName(String key) {
         return "set" + key.substring(0, 1).toUpperCase() + key.substring(1, key.length());
-    }
-
-    public static Container getInstance() {
-        if (instance == null) {
-            instance = new Container();
-        }
-        return instance;
     }
 }

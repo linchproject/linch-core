@@ -11,7 +11,7 @@ public class Controller {
 
     protected Route route;
 
-    private Renderer renderer;
+    protected Renderer renderer;
 
     protected Result success() {
         return new Success(null);

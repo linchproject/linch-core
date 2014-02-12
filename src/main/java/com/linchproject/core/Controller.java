@@ -1,5 +1,6 @@
 package com.linchproject.core;
 
+import com.linchproject.core.results.Dispatch;
 import com.linchproject.core.results.Success;
 
 import java.util.Map;
@@ -35,5 +36,9 @@ public class Controller {
 
     public void setRenderer(Renderer renderer) {
         this.renderer = renderer;
+    }
+
+    public Result dispatch(Route route)  {
+        return new Dispatch(route);
     }
 }

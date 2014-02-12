@@ -2,6 +2,9 @@ package com.linchproject.core;
 
 import org.junit.Test;
 
+import test.A;
+import test.B;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

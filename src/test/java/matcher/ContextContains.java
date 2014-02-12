@@ -1,4 +1,4 @@
-package com.linchproject.core;
+package matcher;
 
 import org.mockito.ArgumentMatcher;
 

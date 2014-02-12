@@ -1,4 +1,8 @@
-package com.linchproject.core;
+package test.controller;
+
+import com.linchproject.core.Controller;
+import com.linchproject.core.Params;
+import com.linchproject.core.Result;
 
 /**
  * @author Georg Schmidl

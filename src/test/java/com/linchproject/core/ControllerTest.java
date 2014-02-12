@@ -1,6 +1,7 @@
 package com.linchproject.core;
 
 import com.linchproject.core.results.Success;
+import matcher.ContextContains;
 import org.junit.Test;
 
 import java.util.HashMap;

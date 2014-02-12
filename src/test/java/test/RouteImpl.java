@@ -1,4 +1,6 @@
-package com.linchproject.core;
+package test;
+
+import com.linchproject.core.Route;
 
 /**
  * @author Georg Schmidl

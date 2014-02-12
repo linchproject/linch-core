@@ -3,6 +3,7 @@ package com.linchproject.core;
 import com.linchproject.core.results.Error;
 import com.linchproject.core.results.Success;
 import org.junit.Test;
+import test.RouteImpl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -14,7 +15,7 @@ public class InvokerTest {
 
     @Test
     public void testInvoke() throws Exception {
-        Invoker invoker = new Invoker(getClass().getClassLoader(), "com.linchproject.core", new Container());
+        Invoker invoker = new Invoker(getClass().getClassLoader(), "test.controller", new Container());
 
         Result result;
 

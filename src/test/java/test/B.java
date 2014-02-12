@@ -1,4 +1,4 @@
-package com.linchproject.core;
+package test;
 
 /**
  * @author Georg Schmidl

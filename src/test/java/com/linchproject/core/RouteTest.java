@@ -3,6 +3,7 @@ package com.linchproject.core;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -36,19 +37,19 @@ public class RouteTest {
     }
 
     @Test
-    public void testGetParams() throws Exception {
-        Params params = new Params(new HashMap<String, String[]>(){{
+    public void testGetParameterMap() throws Exception {
+        Map<String, String[]> parameterMap = new HashMap<String, String[]>(){{
             put("a", new String[] {"b"});
-        }});
+        }};
 
         Route route;
 
         route = new RouteImpl();
-        route.setParams(params);
-        assertEquals(params, route.getParams());
+        route.setParameterMap(parameterMap);
+        assertEquals(parameterMap, route.getParameterMap());
 
         route = new RouteImpl();
-        assertEquals(Params.getEmptyParams(), route.getParams());
+        assertEquals(new HashMap<String, String[]>(), route.getParameterMap());
     }
 
     @Test

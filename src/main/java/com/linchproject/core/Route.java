@@ -1,5 +1,8 @@
 package com.linchproject.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Georg Schmidl
  */
@@ -10,7 +13,7 @@ public abstract class Route {
 
     private String controller;
     private String action;
-    private Params params;
+    private Map<String, String[]> parameterMap;
 
     public String getController() {
         return controller == null? DEFAULT_CONTROLLER: controller;
@@ -28,12 +31,12 @@ public abstract class Route {
         this.action = action;
     }
 
-    public Params getParams() {
-        return params == null? Params.getEmptyParams(): params;
+    public Map<String, String[]> getParameterMap() {
+        return parameterMap == null? new HashMap<String, String[]>(): parameterMap;
     }
 
-    public void setParams(Params params) {
-        this.params = params;
+    public void setParameterMap(Map<String, String[]> parameterMap) {
+        this.parameterMap = parameterMap;
     }
 
     public abstract String getUrl();

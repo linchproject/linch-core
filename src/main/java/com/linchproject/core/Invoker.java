@@ -4,6 +4,7 @@ import com.linchproject.core.results.Error;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * @author Georg Schmidl
@@ -23,7 +24,7 @@ public class Invoker {
     public Result invoke(Route route) {
         String controller = route.getController();
         String action = route.getAction();
-        Params params = route.getParams();
+        Map<String, String[]> parameterMap = route.getParameterMap();
 
         Result result;
 
@@ -35,7 +36,7 @@ public class Invoker {
 
             try {
                 Method actionMethod = controllerClass.getMethod(action, Params.class);
-                result = (Result) actionMethod.invoke(controllerInstance, params);
+                result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
 
             } catch (NoSuchMethodException e) {
                 result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");

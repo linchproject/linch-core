@@ -3,10 +3,13 @@ package com.linchproject.core;
 import org.junit.Test;
 import test.RouteImpl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Georg Schmidl
@@ -54,7 +57,100 @@ public class RouteTest {
     }
 
     @Test
-    public void testGetDefaultRoute() throws Exception {
+    public void testCopy() throws Exception {
+        Route route = new RouteImpl();
+        route.setSubPackage("a");
+        route.setController("b");
+        route.setAction("c");
+        route.setTail("d");
+        route.setParameterMap(new HashMap<String, String[]>() {{
+            put("1", new String[]{"1", "2"});
+        }});
+
+        Route newRoute = route.copy();
+        assertEquals("a", newRoute.getSubPackage());
+        assertEquals("b", newRoute.getController());
+        assertEquals("c", newRoute.getAction());
+        assertEquals("d", newRoute.getTail());
+        assertTrue(route.getParameterMap().size() == 1);
+        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
+    }
+
+    @Test
+    public void testShift() throws Exception {
+        Route route;
+
+        route = new RouteImpl();
+        route.setController("b");
+        route.setAction("c");
+        route.setTail("d");
+        route.setParameterMap(new HashMap<String, String[]>() {{
+            put("1", new String[]{"1", "2"});
+        }});
+
+        route = route.shift("z");
+
+        assertEquals("z", route.getSubPackage());
+        assertEquals("c", route.getController());
+        assertEquals("d", route.getAction());
+        assertNull(route.getTail());
+        assertTrue(route.getParameterMap().size() == 1);
+        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
+
+
+        route = new RouteImpl();
+        route.setController("b");
+        route.setAction("c");
+        route.setTail("d/");
+        route.setParameterMap(new HashMap<String, String[]>() {{
+            put("1", new String[]{"1", "2"});
+        }});
+
+        route = route.shift("z");
+
+        assertEquals("z", route.getSubPackage());
+        assertEquals("c", route.getController());
+        assertEquals("d", route.getAction());
+        assertNull(route.getTail());
+        assertTrue(route.getParameterMap().size() == 1);
+        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
+
+
+        route = new RouteImpl();
+        route.setSubPackage("a");
+        route.setController("b");
+        route.setAction("c");
+        route.setTail("d/e");
+        route.setParameterMap(new HashMap<String, String[]>() {{
+            put("1", new String[]{"1", "2"});
+        }});
+
+        route = route.shift("z");
+
+        assertEquals("a.z", route.getSubPackage());
+        assertEquals("c", route.getController());
+        assertEquals("d", route.getAction());
+        assertEquals("e", route.getTail());
+        assertTrue(route.getParameterMap().size() == 1);
+        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
+
+        route = new RouteImpl();
+        route.setSubPackage("a");
+        route.setController("b");
+        route.setAction("c");
+        route.setTail("d/e/f");
+        route.setParameterMap(new HashMap<String, String[]>() {{
+            put("1", new String[]{"1", "2"});
+        }});
+
+        route = route.shift("z");
+
+        assertEquals("a.z", route.getSubPackage());
+        assertEquals("c", route.getController());
+        assertEquals("d", route.getAction());
+        assertEquals("e/f", route.getTail());
+        assertTrue(route.getParameterMap().size() == 1);
+        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
 
     }
 }

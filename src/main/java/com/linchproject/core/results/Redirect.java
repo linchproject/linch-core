@@ -11,7 +11,6 @@ public class Redirect implements Result {
     private Route route;
 
     public Redirect() {
-        this(null);
     }
 
     public Redirect(Route route) {

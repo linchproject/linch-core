@@ -11,7 +11,6 @@ public class Error implements Result {
     private Exception exception;
 
     public Error() {
-        this(null, null);
     }
 
     public Error(String message) {

@@ -11,7 +11,6 @@ public class Dispatch implements Result {
     private Route route;
 
     public Dispatch() {
-        this(null);
     }
 
     public Dispatch(Route route) {

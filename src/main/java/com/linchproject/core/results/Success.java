@@ -10,7 +10,6 @@ public class Success implements Result {
     private String content;
 
     public Success() {
-        this(null);
     }
 
     public Success(String content) {

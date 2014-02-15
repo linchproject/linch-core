@@ -17,6 +17,7 @@ public class Controller {
 
     protected Route route;
     protected Renderer renderer;
+    protected UserAccessor userAccessor;
 
     protected Result success() {
         return success(null);
@@ -56,10 +57,23 @@ public class Controller {
         this.renderer = renderer;
     }
 
+    public void setUserAccessor(UserAccessor userAccessor) {
+        this.userAccessor = userAccessor;
+    }
+
     protected Map<String, Object> createContext() {
         Map<String, Object> context = new HashMap<String, Object>();
         context.put("route", route);
         return context;
+    }
+
+    protected User getUser() {
+        User user = null;
+        String userId = route.getUserId();
+        if (userAccessor != null && userId != null) {
+            user = userAccessor.getUser(userId);
+        }
+        return user;
     }
 
     public boolean isPermitted() {

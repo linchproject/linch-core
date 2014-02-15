@@ -51,4 +51,8 @@ public class Controller {
     public void setRenderer(Renderer renderer) {
         this.renderer = renderer;
     }
+
+    public boolean isPermitted() {
+        return true;
+    }
 }

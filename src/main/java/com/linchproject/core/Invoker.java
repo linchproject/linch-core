@@ -40,26 +40,34 @@ public class Invoker {
             Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
             setRouteMethod.invoke(controllerInstance, route);
 
-            try {
-                Method actionMethod;
+            Method isPermittedMethod = controllerClass.getMethod("isPermitted");
+            Boolean isPermitted = (Boolean) isPermittedMethod.invoke(controllerInstance);
 
+            if (isPermitted) {
                 try {
-                    actionMethod = controllerClass.getMethod("_all", Params.class);
+                    Method actionMethod;
+
+                    try {
+                        actionMethod = controllerClass.getMethod("_all", Params.class);
+                    } catch (NoSuchMethodException e) {
+                        actionMethod = controllerClass.getMethod(action, Params.class);
+                    }
+                    result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
+
+                    if (result instanceof Dispatch) {
+                        return invoke(((Dispatch) result).getRoute());
+                    }
+
                 } catch (NoSuchMethodException e) {
-                    actionMethod = controllerClass.getMethod(action, Params.class);
+                    result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
+                } catch (IllegalAccessException e) {
+                    result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
+                } catch (InvocationTargetException e) {
+                    result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
                 }
-                result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
 
-                if (result instanceof Dispatch) {
-                    return invoke(((Dispatch) result).getRoute());
-                }
-
-            } catch (NoSuchMethodException e) {
-                result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
-            } catch (IllegalAccessException e) {
-                result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
-            } catch (InvocationTargetException e) {
-                result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
+            } else {
+                result = new Error("Not permitted");
             }
 
         } catch (ClassNotFoundException e) {

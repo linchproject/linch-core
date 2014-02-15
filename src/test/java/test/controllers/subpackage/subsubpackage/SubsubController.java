@@ -1,4 +1,4 @@
-package test.controller.subpackage.subsubpackage;
+package test.controllers.subpackage.subsubpackage;
 
 import com.linchproject.core.Controller;
 import com.linchproject.core.Params;

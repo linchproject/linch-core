@@ -13,12 +13,12 @@ import java.util.Map;
 public class Invoker {
 
     private ClassLoader classLoader;
-    private String controllerPackage;
+    private String controllersPackage;
     private Container container;
 
-    public Invoker(ClassLoader classLoader, String controllerPackage, Container container) {
+    public Invoker(ClassLoader classLoader, String controllersPackage, Container container) {
         this.classLoader = classLoader;
-        this.controllerPackage = controllerPackage;
+        this.controllersPackage = controllersPackage;
         this.container = container;
     }
 
@@ -77,7 +77,7 @@ public class Invoker {
     }
 
     private String getControllerClassName(String controller, String subPackage) {
-        return controllerPackage
+        return controllersPackage
                 + (subPackage != null? "." + subPackage: "")
                 + "."
                 + controller.substring(0, 1).toUpperCase()

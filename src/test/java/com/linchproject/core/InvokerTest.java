@@ -15,7 +15,7 @@ public class InvokerTest {
 
     @Test
     public void testInvoke() throws Exception {
-        Invoker invoker = new Invoker(getClass().getClassLoader(), "test.controller", new Container());
+        Invoker invoker = new Invoker(getClass().getClassLoader(), "test.controllers", new Container());
 
         Result result;
         Route route;

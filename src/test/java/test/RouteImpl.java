@@ -13,6 +13,16 @@ public class RouteImpl extends Route {
     }
 
     @Override
+    public String getUserId() {
+        return null;
+    }
+
+    @Override
+    public void setUserId(String userId) {
+
+    }
+
+    @Override
     public Route newRoute() {
         return new RouteImpl();
     }

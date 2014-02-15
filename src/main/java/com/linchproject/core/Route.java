@@ -72,7 +72,7 @@ public abstract class Route {
 
     private int getNextCursor(int previousCursor) {
         int nextCursor = path.indexOf("/", previousCursor + 1);
-        return nextCursor >= 0? nextCursor: getLastCursor();
+        return nextCursor >= 0 && nextCursor < getLastCursor()? nextCursor: getLastCursor();
     }
 
     private int getLastCursor() {

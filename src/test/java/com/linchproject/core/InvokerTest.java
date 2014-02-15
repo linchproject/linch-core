@@ -21,38 +21,31 @@ public class InvokerTest {
         Route route;
 
         route = new RouteImpl();
-        route.setController("my");
-        route.setAction("index");
+        route.setPath("/my/index");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("index", ((Success) result).getContent());
 
         route = new RouteImpl();
-        route.setController("invalid");
-        route.setAction("index");
+        route.setPath("/invalid/index");
         result = invoker.invoke(route);
         assertTrue(result instanceof Error);
 
         route = new RouteImpl();
-        route.setController("my");
-        route.setAction("invalid");
+        route.setPath("/my/invalid");
         result = invoker.invoke(route);
         assertTrue(result instanceof Error);
 
 
         route = new RouteImpl();
-        route.setController("dispatcher");
-        route.setAction("sub");
-        route.setTail("index");
+        route.setPath("/dispatcher/sub/index");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("sub", ((Success) result).getContent());
 
 
         route = new RouteImpl();
-        route.setController("dispatcher");
-        route.setAction("dispatcher");
-        route.setTail("subsub/index");
+        route.setPath("/dispatcher/dispatcher/subsub/index");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("subsub", ((Success) result).getContent());

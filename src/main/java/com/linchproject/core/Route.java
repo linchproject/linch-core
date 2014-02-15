@@ -34,8 +34,10 @@ public abstract class Route {
     public void setPath(String path) {
         if (path.startsWith("/")) {
             this.path = path;
-            this.cursor = 0;
+        } else {
+            this.path = this.path.substring(0, this.path.lastIndexOf("/") + 1) + path;
         }
+        this.cursor = 0;
     }
 
     public String getController() {

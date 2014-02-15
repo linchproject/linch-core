@@ -15,6 +15,16 @@ import static org.junit.Assert.*;
 public class RouteTest {
 
     @Test
+    public void testSetPath() throws Exception {
+        Route route = new RouteImpl();
+        route.setPath("/a/b/c?1=2");
+        assertEquals("/a/b/c?1=2", route.getPath());
+        route.setPath("d/e");
+        assertEquals("/a/b/d/e", route.getPath());
+
+    }
+
+    @Test
     public void testGetController() throws Exception {
         Route route;
 

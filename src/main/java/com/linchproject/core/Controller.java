@@ -6,6 +6,8 @@ import com.linchproject.core.results.Redirect;
 import com.linchproject.core.results.Success;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -17,7 +19,7 @@ public class Controller {
     protected Renderer renderer;
 
     protected Result success() {
-        return new Success(null);
+        return success(null);
     }
 
     protected Result success(String content) {
@@ -25,10 +27,12 @@ public class Controller {
     }
 
     protected Result render(String template) {
-        return success(renderer.render(template, null, route));
+        return render(template, Collections.<String, Object>emptyMap());
     }
 
-    protected Result render(String template, Map<String, Object> context) {
+    protected Result render(String template, Map<String, Object> actionContext) {
+        Map<String, Object> context = createContext();
+        context.putAll(actionContext);
         return success(renderer.render(template, context, route));
     }
 
@@ -50,6 +54,12 @@ public class Controller {
 
     public void setRenderer(Renderer renderer) {
         this.renderer = renderer;
+    }
+
+    protected Map<String, Object> createContext() {
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put("route", route);
+        return context;
     }
 
     public boolean isPermitted() {

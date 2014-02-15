@@ -68,6 +68,6 @@ public class ControllerTest {
 
         result = this.myController.noName(null);
         assertTrue(result instanceof Success);
-        verify(renderer).render(eq("name"), isNull(Map.class), any(Route.class));
+        verify(renderer).render(eq("name"), argThat(new ContextContains("name", null)), any(Route.class));
     }
 }

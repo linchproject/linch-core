@@ -21,6 +21,7 @@ public class ContextContains extends ArgumentMatcher<Map<String, Object>> {
 
     @Override
     public boolean matches(Object argument) {
-        return value.equals(((Map<String, Object>) argument).get(key));
+        Map<String, Object> context = (Map<String, Object>) argument;
+        return value != null? value.equals(context.get(key)): context.get(key) == null;
     }
 }

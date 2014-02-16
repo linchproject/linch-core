@@ -5,8 +5,8 @@ import com.linchproject.core.results.Dispatch;
 import com.linchproject.core.results.Redirect;
 import com.linchproject.core.results.Success;
 
+import javax.persistence.EntityManager;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,8 +16,9 @@ import java.util.Map;
 public class Controller {
 
     protected Route route;
-    protected Renderer renderer;
+
     protected UserAccessor userAccessor;
+    protected EntityManager entityManager;
 
     protected Result success() {
         return success(null);
@@ -25,16 +26,6 @@ public class Controller {
 
     protected Result success(String content) {
         return new Success(content);
-    }
-
-    protected Result render(String template) {
-        return render(template, Collections.<String, Object>emptyMap());
-    }
-
-    protected Result render(String template, Map<String, Object> actionContext) {
-        Map<String, Object> context = createContext();
-        context.putAll(actionContext);
-        return success(renderer.render(template, context, route));
     }
 
     protected Result binary(InputStream inputStream) {
@@ -53,12 +44,12 @@ public class Controller {
         this.route = route;
     }
 
-    public void setRenderer(Renderer renderer) {
-        this.renderer = renderer;
-    }
-
     public void setUserAccessor(UserAccessor userAccessor) {
         this.userAccessor = userAccessor;
+    }
+
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     protected Map<String, Object> createContext() {

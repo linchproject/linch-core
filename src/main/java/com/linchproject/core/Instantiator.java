@@ -5,5 +5,5 @@ package com.linchproject.core;
  */
 public interface Instantiator {
 
-    Object instantiate(Class<?> clazz);
+    Object instantiate(Class<?> clazz) throws InstantiationException, IllegalAccessException;
 }

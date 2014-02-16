@@ -14,12 +14,16 @@ public class Invoker {
 
     private ClassLoader classLoader;
     private String controllersPackage;
-    private Container container;
+    private Instantiator instantiator;
 
-    public Invoker(ClassLoader classLoader, String controllersPackage, Container container) {
+    public Invoker(ClassLoader classLoader, String controllersPackage) {
+        this(classLoader, controllersPackage, null);
+    }
+
+    public Invoker(ClassLoader classLoader, String controllersPackage, Instantiator instantiator) {
         this.classLoader = classLoader;
         this.controllersPackage = controllersPackage;
-        this.container = container;
+        this.instantiator = instantiator;
     }
 
     public Result invoke(Route route) {
@@ -33,9 +37,13 @@ public class Invoker {
         try {
             String controllerClassName = getControllerClassName(controller, subPackage);
             Class<?> controllerClass = this.classLoader.loadClass(controllerClassName);
-            Object controllerInstance = controllerClass.newInstance();
 
-            this.container.autowire(controllerInstance);
+            Object controllerInstance;
+            if (this.instantiator != null) {
+                controllerInstance = instantiator.instantiate(controllerClass);
+            } else {
+                controllerInstance = controllerClass.newInstance();
+            }
 
             Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
             setRouteMethod.invoke(controllerInstance, route);

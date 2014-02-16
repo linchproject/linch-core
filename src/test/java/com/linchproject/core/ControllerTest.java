@@ -19,7 +19,7 @@ public class ControllerTest {
         }
 
         public Result nothing(Params params) {
-            return success();
+            return success(null);
         }
     }
 

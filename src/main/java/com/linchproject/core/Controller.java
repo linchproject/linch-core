@@ -6,8 +6,6 @@ import com.linchproject.core.results.Redirect;
 import com.linchproject.core.results.Success;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Georg Schmidl
@@ -16,37 +14,31 @@ public class Controller {
 
     protected Route route;
 
-    protected Result success() {
-        return success(null);
-    }
-
     protected Result success(String content) {
-        return new Success(content);
+        return exit(new Success(content));
     }
 
     protected Result binary(InputStream inputStream) {
-        return new Binary(inputStream);
+        return exit(new Binary(inputStream));
     }
 
-    public Result redirect(Route route)  {
-        return new Redirect(route);
+    protected Result redirect(Route route)  {
+        return exit(new Redirect(route));
     }
 
-    public Result dispatch(Route route)  {
-        return new Dispatch(route);
+    protected Result dispatch(Route route)  {
+        return exit(new Dispatch(route));
     }
 
-    public void setRoute(Route route) {
-        this.route = route;
-    }
-
-    protected Map<String, Object> createContext() {
-        Map<String, Object> context = new HashMap<String, Object>();
-        context.put("route", route);
-        return context;
+    protected Result exit(Result result) {
+        return result;
     }
 
     public boolean isPermitted() {
         return true;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
     }
 }

@@ -88,10 +88,18 @@ public class Container {
                         method.invoke(object, get(key));
                     }
                 }
+                for (Class<?> interfaceClass : object.getClass().getInterfaces()) {
+                    if (Component.class.equals(interfaceClass)) {
+                        Method initMethod = object.getClass().getMethod("init");
+                        initMethod.invoke(object);
+                    }
+                }
 
             } catch (InvocationTargetException e) {
                 // ignore
             } catch (IllegalAccessException e) {
+                // ignore
+            } catch (NoSuchMethodException e) {
                 // ignore
             }
         }

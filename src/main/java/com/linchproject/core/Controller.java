@@ -14,28 +14,36 @@ public class Controller {
 
     protected Route route;
 
+    public void init() {
+
+    }
+
     protected Result success(String content) {
-        return exit(new Success(content));
+        return new Success(content);
     }
 
     protected Result binary(InputStream inputStream) {
-        return exit(new Binary(inputStream));
+        return new Binary(inputStream);
     }
 
     protected Result redirect(Route route)  {
-        return exit(new Redirect(route));
+        return new Redirect(route);
     }
 
     protected Result dispatch(Route route)  {
-        return exit(new Dispatch(route));
-    }
-
-    protected Result exit(Result result) {
-        return result;
+        return new Dispatch(route);
     }
 
     public boolean isPermitted() {
         return true;
+    }
+
+    public void onError() {
+
+    }
+
+    public void onSuccess() {
+
     }
 
     public void setRoute(Route route) {

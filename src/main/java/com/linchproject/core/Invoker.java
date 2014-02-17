@@ -60,7 +60,20 @@ public class Invoker {
                     } catch (NoSuchMethodException e) {
                         actionMethod = controllerClass.getMethod(action, Params.class);
                     }
-                    result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
+
+                    Method initMethod = controllerClass.getMethod("init");
+                    initMethod.invoke(controllerInstance);
+
+                    try {
+                        result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
+
+                    } catch (Exception e){
+                        Method onErrorMethod = controllerClass.getMethod("onError");
+                        onErrorMethod.invoke(controllerInstance);
+                        throw e;
+                    }
+                    Method onSuccessMethod = controllerClass.getMethod("onSuccess");
+                    onSuccessMethod.invoke(controllerInstance);
 
                     if (result instanceof Dispatch) {
                         return invoke(((Dispatch) result).getRoute());

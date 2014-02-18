@@ -14,16 +14,16 @@ public class Invoker {
 
     private ClassLoader classLoader;
     private String controllersPackage;
-    private Instantiator instantiator;
+    private Injector injector;
 
     public Invoker(ClassLoader classLoader, String controllersPackage) {
         this(classLoader, controllersPackage, null);
     }
 
-    public Invoker(ClassLoader classLoader, String controllersPackage, Instantiator instantiator) {
+    public Invoker(ClassLoader classLoader, String controllersPackage, Injector injector) {
         this.classLoader = classLoader;
         this.controllersPackage = controllersPackage;
-        this.instantiator = instantiator;
+        this.injector = injector;
     }
 
     public Result invoke(Route route) {
@@ -38,11 +38,9 @@ public class Invoker {
             String controllerClassName = getControllerClassName(controller, subPackage);
             Class<?> controllerClass = this.classLoader.loadClass(controllerClassName);
 
-            Object controllerInstance;
-            if (this.instantiator != null) {
-                controllerInstance = instantiator.instantiate(controllerClass);
-            } else {
-                controllerInstance = controllerClass.newInstance();
+            Object controllerInstance = controllerClass.newInstance();
+            if (injector != null) {
+                injector.inject(controllerInstance);
             }
 
             Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);

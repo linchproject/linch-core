@@ -20,10 +20,6 @@ public abstract class Controller {
 
     }
 
-    public Result _filter(Params params) {
-        return dispatch(route);
-    }
-
     protected Result success(String content) {
         return new Success(content);
     }

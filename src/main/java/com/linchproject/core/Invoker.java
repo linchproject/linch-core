@@ -5,7 +5,6 @@ import com.linchproject.core.results.Error;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * @author Georg Schmidl
@@ -29,7 +28,8 @@ public class Invoker {
     public Result invoke(Route route) {
         String subPackage = route.getSubPackage();
         String controller = route.getController();
-        Map<String, String[]> parameterMap = route.getParameterMap();
+        String action = route.getAction();
+        Params params = new Params(route.getParameterMap());
 
         Result result;
 
@@ -48,58 +48,39 @@ public class Invoker {
 
             Method initMethod = controllerClass.getMethod("_init");
             Method quitMethod = controllerClass.getMethod("_quit", Exception.class);
-            Method filterMethod = controllerClass.getMethod("_filter", Params.class);
 
             initMethod.invoke(controllerInstance);
 
-            Result filterResult;
-
             try {
-                filterResult = (Result) filterMethod.invoke(controllerInstance, new Params(parameterMap));
-            } catch (Exception e){
-                quitMethod.invoke(controllerInstance, e);
-                throw e;
-            }
+                Method _Method = controllerClass.getMethod("_", Params.class);
 
-            if (filterResult instanceof Dispatch) {
-                Route newRoute = ((Dispatch) filterResult).getRoute();
-                String newSubPackage = newRoute.getSubPackage();
-                String newController = newRoute.getController();
-                String newControllerClassName = getControllerClassName(newController, newSubPackage);
+                Result _Result;
 
-                if (!controllerClassName.equals(newControllerClassName)) {
-                    result = invoke(newRoute);
-
-                } else {
-                    String action = newRoute.getAction();
-
-                    try {
-                        Method actionMethod = controllerClass.getMethod(action, Params.class);
-
-                        try {
-                            result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
-
-                        } catch (Exception e){
-                            quitMethod.invoke(controllerInstance, e);
-                            throw e;
-                        }
-
-                        if (result instanceof Dispatch) {
-                            result = invoke(((Dispatch) result).getRoute());
-                        }
-                    } catch (NoSuchMethodException e) {
-                        quitMethod.invoke(controllerInstance, e);
-                        result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
-                    } catch (IllegalAccessException e) {
-                        quitMethod.invoke(controllerInstance, e);
-                        result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
-                    } catch (InvocationTargetException e) {
-                        quitMethod.invoke(controllerInstance, e);
-                        result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
-                    }
+                try {
+                    _Result = (Result) _Method.invoke(controllerInstance, params);
+                } catch (Exception e){
+                    quitMethod.invoke(controllerInstance, e);
+                    throw e;
                 }
-            } else {
-                result = filterResult;
+
+                if (_Result instanceof Dispatch) {
+                    Route _Route = ((Dispatch) _Result).getRoute();
+                    String _SubPackage = _Route.getSubPackage();
+                    String _Controller = _Route.getController();
+                    String _ControllerClassName = getControllerClassName(_Controller, _SubPackage);
+
+                    if (!controllerClassName.equals(_ControllerClassName)) {
+                        result = invoke(_Route);
+
+                    } else {
+                        action = _Route.getAction();
+                        result = invokeAction(action, controller, params, controllerClass, controllerInstance, quitMethod);
+                    }
+                } else {
+                    result = _Result;
+                }
+            } catch (NoSuchMethodException e) {
+                result = invokeAction(action, controller, params, controllerClass, controllerInstance, quitMethod);
             }
             quitMethod.invoke(controllerInstance, new Exception[]{null});
 
@@ -114,6 +95,35 @@ public class Invoker {
             result = new Error("An error occurred", e);
         }
 
+        return result;
+    }
+
+    private Result invokeAction(String action, String controller, Params params, Class<?> controllerClass, Object controllerInstance, Method quitMethod) throws Exception {
+        Result result;
+        try {
+            Method actionMethod = controllerClass.getMethod(action, Params.class);
+
+            try {
+                result = (Result) actionMethod.invoke(controllerInstance, params);
+
+            } catch (Exception e){
+                quitMethod.invoke(controllerInstance, e);
+                throw e;
+            }
+
+            if (result instanceof Dispatch) {
+                result = invoke(((Dispatch) result).getRoute());
+            }
+        } catch (NoSuchMethodException e) {
+            quitMethod.invoke(controllerInstance, e);
+            result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
+        } catch (IllegalAccessException e) {
+            quitMethod.invoke(controllerInstance, e);
+            result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
+        } catch (InvocationTargetException e) {
+            quitMethod.invoke(controllerInstance, e);
+            result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
+        }
         return result;
     }
 

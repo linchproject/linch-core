@@ -9,7 +9,8 @@ import com.linchproject.core.Result;
  */
 public class DispatcherController extends Controller {
 
-    public Result _all(Params params) {
+    @Override
+    public Result _filter(Params params) {
         return dispatch(route.shift("subsubpackage"));
     }
 }

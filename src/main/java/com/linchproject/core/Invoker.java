@@ -29,7 +29,6 @@ public class Invoker {
     public Result invoke(Route route) {
         String subPackage = route.getSubPackage();
         String controller = route.getController();
-        String action = route.getAction();
         Map<String, String[]> parameterMap = route.getParameterMap();
 
         Result result;
@@ -39,55 +38,70 @@ public class Invoker {
             Class<?> controllerClass = this.classLoader.loadClass(controllerClassName);
 
             Object controllerInstance = controllerClass.newInstance();
-            if (injector != null) {
-                injector.inject(controllerInstance);
-            }
 
             Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
             setRouteMethod.invoke(controllerInstance, route);
 
-            Method isPermittedMethod = controllerClass.getMethod("isPermitted");
-            Boolean isPermitted = (Boolean) isPermittedMethod.invoke(controllerInstance);
-
-            if (isPermitted) {
-                try {
-                    Method actionMethod;
-
-                    try {
-                        actionMethod = controllerClass.getMethod("_all", Params.class);
-                    } catch (NoSuchMethodException e) {
-                        actionMethod = controllerClass.getMethod(action, Params.class);
-                    }
-
-                    Method initMethod = controllerClass.getMethod("init");
-                    initMethod.invoke(controllerInstance);
-
-                    try {
-                        result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
-
-                    } catch (Exception e){
-                        Method onErrorMethod = controllerClass.getMethod("onError");
-                        onErrorMethod.invoke(controllerInstance);
-                        throw e;
-                    }
-                    Method onSuccessMethod = controllerClass.getMethod("onSuccess");
-                    onSuccessMethod.invoke(controllerInstance);
-
-                    if (result instanceof Dispatch) {
-                        return invoke(((Dispatch) result).getRoute());
-                    }
-
-                } catch (NoSuchMethodException e) {
-                    result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
-                } catch (IllegalAccessException e) {
-                    result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
-                } catch (InvocationTargetException e) {
-                    result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
-                }
-
-            } else {
-                result = new Error("Not permitted");
+            if (injector != null) {
+                injector.inject(controllerInstance);
             }
+
+            Method initMethod = controllerClass.getMethod("_init");
+            Method quitMethod = controllerClass.getMethod("_quit", Exception.class);
+            Method filterMethod = controllerClass.getMethod("_filter", Params.class);
+
+            initMethod.invoke(controllerInstance);
+
+            Result filterResult;
+
+            try {
+                filterResult = (Result) filterMethod.invoke(controllerInstance, new Params(parameterMap));
+            } catch (Exception e){
+                quitMethod.invoke(controllerInstance, e);
+                throw e;
+            }
+
+            if (filterResult instanceof Dispatch) {
+                Route newRoute = ((Dispatch) filterResult).getRoute();
+                String newSubPackage = newRoute.getSubPackage();
+                String newController = newRoute.getController();
+                String newControllerClassName = getControllerClassName(newController, newSubPackage);
+
+                if (!controllerClassName.equals(newControllerClassName)) {
+                    result = invoke(newRoute);
+
+                } else {
+                    String action = newRoute.getAction();
+
+                    try {
+                        Method actionMethod = controllerClass.getMethod(action, Params.class);
+
+                        try {
+                            result = (Result) actionMethod.invoke(controllerInstance, new Params(parameterMap));
+
+                        } catch (Exception e){
+                            quitMethod.invoke(controllerInstance, e);
+                            throw e;
+                        }
+
+                        if (result instanceof Dispatch) {
+                            result = invoke(((Dispatch) result).getRoute());
+                        }
+                    } catch (NoSuchMethodException e) {
+                        quitMethod.invoke(controllerInstance, e);
+                        result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
+                    } catch (IllegalAccessException e) {
+                        quitMethod.invoke(controllerInstance, e);
+                        result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
+                    } catch (InvocationTargetException e) {
+                        quitMethod.invoke(controllerInstance, e);
+                        result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
+                    }
+                }
+            } else {
+                result = filterResult;
+            }
+            quitMethod.invoke(controllerInstance, new Exception[]{null});
 
         } catch (ClassNotFoundException e) {
             result = new Error("Cannot find controller '" + controller + "'");

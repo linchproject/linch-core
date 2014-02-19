@@ -1,21 +1,27 @@
 package com.linchproject.core;
 
-import com.linchproject.core.results.Binary;
-import com.linchproject.core.results.Dispatch;
-import com.linchproject.core.results.Redirect;
-import com.linchproject.core.results.Success;
+import com.linchproject.core.results.*;
+import com.linchproject.core.results.Error;
 
 import java.io.InputStream;
 
 /**
  * @author Georg Schmidl
  */
-public class Controller {
+public abstract class Controller {
 
     protected Route route;
 
-    public void init() {
+    public void _init() {
 
+    }
+
+    public void _quit(Exception e) {
+
+    }
+
+    public Result _filter(Params params) {
+        return dispatch(route);
     }
 
     protected Result success(String content) {
@@ -34,16 +40,8 @@ public class Controller {
         return new Dispatch(route);
     }
 
-    public boolean isPermitted() {
-        return true;
-    }
-
-    public void onError() {
-
-    }
-
-    public void onSuccess() {
-
+    protected Result error(String message)  {
+        return new Error(message);
     }
 
     public void setRoute(Route route) {

@@ -7,6 +7,28 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
+ * Pseudo Code:
+ *
+ * invoke(route)
+ *   dispatch(route, true, true)
+ *
+ * dispatch(route, call_controller, call_method)
+ *   if (call_controller)
+ *     result = invoke(_controller, _method)
+ *     call_controller = false;
+ *   else
+ *     if (call_method)
+ *       result = invoke(route.contoller, _method)
+ *       call_method = false
+ *     else
+ *       result = invoke(route.controller, route.action)
+ *
+ *   if (result == dispatch)
+ *     dispatch(result.route, false, true)
+ *
+ *   return result
+ *
+ *
  * @author Georg Schmidl
  */
 public class Invoker {

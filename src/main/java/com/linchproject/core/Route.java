@@ -10,7 +10,7 @@ public abstract class Route {
     private static final String DEFAULT_CONTROLLER = "app";
     private static final String DEFAULT_ACTION = "index";
 
-    private String subPackage;
+    private String controllerPackage;
 
     private String path;
     private int cursor;
@@ -19,12 +19,12 @@ public abstract class Route {
         setPath("/");
     }
 
-    public String getSubPackage() {
-        return subPackage;
+    public String getControllerPackage() {
+        return controllerPackage;
     }
 
-    public void setSubPackage(String subPackage) {
-        this.subPackage = subPackage;
+    public void setControllerPackage(String controllerPackage) {
+        this.controllerPackage = controllerPackage;
     }
 
     public String getPath() {
@@ -108,22 +108,36 @@ public abstract class Route {
         return parameterMap == null? Collections.<String, String[]>emptyMap(): parameterMap;
     }
 
+    public boolean isSamePackage(Route route) {
+        return controllerPackage == null? route.controllerPackage == null:
+                controllerPackage.equals(route.controllerPackage);
+    }
+
+    public boolean isSameController(Route route) {
+        return isSamePackage(route) && getController().equals(route.getController());
+    }
+
+    public boolean isSameAction(Route route) {
+        return isSameController(route) && getAction().equals(route.getAction());
+    }
+
     public Route copy() {
         Route route = newRoute();
-        route.subPackage = subPackage;
+        route.controllerPackage = controllerPackage;
         route.path = path;
         route.cursor = cursor;
         return route;
     }
 
     public Route shift(String subPackage) {
-        this.subPackage = this.subPackage != null? this.subPackage + "." + subPackage: subPackage;
+        Route route = copy();
+        route.controllerPackage = route.controllerPackage != null? route.controllerPackage + "." + subPackage: subPackage;
 
-        int nextCursor = getNextCursor();
+        int nextCursor = route.getNextCursor();
         if (nextCursor >= 0) {
-            cursor = nextCursor;
+            route.cursor = nextCursor;
         }
-        return this;
+        return route;
     }
 
     protected abstract Route newRoute();

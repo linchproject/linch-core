@@ -170,13 +170,76 @@ public class RouteTest {
     }
 
     @Test
+    public void testIsSamePackage() throws Exception {
+        Route route1;
+        Route route2;
+
+        route1 = new RouteImpl();
+        route2 = new RouteImpl();
+        assertTrue(route1.isSamePackage(route2));
+
+        route1 = new RouteImpl();
+        route1.setControllerPackage("a");
+        route2 = new RouteImpl();
+        route2.setControllerPackage("a");
+        assertTrue(route1.isSamePackage(route2));
+
+        route1 = new RouteImpl();
+        route1.setControllerPackage("a");
+        route2 = new RouteImpl();
+        assertFalse(route1.isSamePackage(route2));
+    }
+
+    @Test
+    public void testIsSameController() throws Exception {
+        Route route1;
+        Route route2;
+
+        route1 = new RouteImpl();
+        route2 = new RouteImpl();
+        assertTrue(route1.isSameController(route2));
+
+        route1 = new RouteImpl();
+        route1.setPath("/a");
+        route2 = new RouteImpl();
+        route2.setPath("/a");
+        assertTrue(route1.isSameController(route2));
+
+        route1 = new RouteImpl();
+        route1.setPath("/a");
+        route2 = new RouteImpl();
+        assertFalse(route1.isSameController(route2));
+    }
+
+    @Test
+    public void testIsSameAction() throws Exception {
+        Route route1;
+        Route route2;
+
+        route1 = new RouteImpl();
+        route2 = new RouteImpl();
+        assertTrue(route1.isSameAction(route2));
+
+        route1 = new RouteImpl();
+        route1.setPath("/a/b");
+        route2 = new RouteImpl();
+        route2.setPath("/a/b");
+        assertTrue(route1.isSameAction(route2));
+
+        route1 = new RouteImpl();
+        route1.setPath("/a/b");
+        route2 = new RouteImpl();
+        assertFalse(route1.isSameAction(route2));
+    }
+
+    @Test
     public void testCopy() throws Exception {
         Route route = new RouteImpl();
-        route.setSubPackage("a");
+        route.setControllerPackage("a");
         route.setPath("/b/c/d?1=1&1=2");
 
         Route newRoute = route.copy();
-        assertEquals("a", newRoute.getSubPackage());
+        assertEquals("a", newRoute.getControllerPackage());
         assertEquals("b", newRoute.getController());
         assertEquals("c", newRoute.getAction());
         assertEquals("d", newRoute.getAfterAction());
@@ -193,7 +256,7 @@ public class RouteTest {
 
         route = route.shift("z");
 
-        assertEquals("z", route.getSubPackage());
+        assertEquals("z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertNull(route.getAfterAction());
@@ -206,7 +269,7 @@ public class RouteTest {
 
         route = route.shift("z");
 
-        assertEquals("z", route.getSubPackage());
+        assertEquals("z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertEquals("", route.getAfterAction());
@@ -215,12 +278,12 @@ public class RouteTest {
 
 
         route = new RouteImpl();
-        route.setSubPackage("a");
+        route.setControllerPackage("a");
         route.setPath("/b/c/d/e?1=1&1=2");
 
         route = route.shift("z");
 
-        assertEquals("a.z", route.getSubPackage());
+        assertEquals("a.z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertEquals("e", route.getAfterAction());
@@ -228,12 +291,12 @@ public class RouteTest {
         assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
 
         route = new RouteImpl();
-        route.setSubPackage("a");
+        route.setControllerPackage("a");
         route.setPath("/b/c/d/e/f?1=1&1=2");
 
         route = route.shift("z");
 
-        assertEquals("a.z", route.getSubPackage());
+        assertEquals("a.z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertEquals("e/f", route.getAfterAction());

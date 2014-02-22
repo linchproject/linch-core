@@ -46,90 +46,88 @@ public class Invoker {
     }
 
     public Result invoke(Route route) {
-        return dispatch(route, true, true);
+        return new Dispatcher().dispatch(route);
     }
 
-    public Result dispatch(Route route, boolean invoke_Controller, boolean invoke_Method) {
-        Result result = null;
+    public class Dispatcher {
 
-        String controllerPackage = route.getControllerPackage();
-        String controller;
-        String action;
+        public Result dispatch(Route route) {
+            return dispatch(route, true, true);
+        }
 
-        if (invoke_Controller) {
-            controller = "_";
-            action = "_";
-            invoke_Controller = false;
-        } else {
-            if (invoke_Method) {
-                controller = route.getController();
+        public Result dispatch(Route route, boolean invoke_Controller, boolean invoke_Method) {
+            Result result = null;
+
+            String controllerPackage = route.getControllerPackage();
+            String controller;
+            String action;
+
+            if (invoke_Controller) {
+                controller = "_";
                 action = "_";
-                invoke_Method = false;
+                invoke_Controller = false;
             } else {
-                controller = route.getController();
-                action = route.getAction();
+                if (invoke_Method) {
+                    controller = route.getController();
+                    action = "_";
+                    invoke_Method = false;
+                } else {
+                    controller = route.getController();
+                    action = route.getAction();
+                }
             }
+
+            Invocation invocation = getInvocation(controllerPackage, controller, action);
+            if (invocation.canInvoke()) {
+                result = invocation.invoke(route);
+            } else if (!"_".equals(controller)  && !invocation.controllerExists()) {
+                result = new Error("Cannot find controller '" + route.getController() + "'");
+            } else if (!"_".equals(action) && !invocation.actionExists()) {
+                result = new Error("Cannot find action '" + route.getAction() + "'");
+            }
+
+            if (result == null) {
+                result = dispatch(route, false, invoke_Method);
+            } else if (result instanceof Dispatch) {
+                Route newRoute = ((Dispatch) result).getRoute();
+                boolean isSamePackage = route.isSamePackage(newRoute);
+                result = dispatch(newRoute, !isSamePackage || invoke_Controller, !isSamePackage || invoke_Method);
+            }
+
+            return result;
         }
 
-        Invocation invocation = getInvocation(controllerPackage, controller, action);
-        if (invocation.canInvoke()) {
-            result = invocation.invoke(route);
-        } else if (!"_".equals(controller)  && !invocation.controllerExists()) {
-            result = new Error("Cannot find controller '" + route.getController() + "'");
-        } else if (!"_".equals(action) && !invocation.actionExists()) {
-            result = new Error("Cannot find action '" + route.getAction() + "'");
+        private Invocation getInvocation(String controllerPackage, String controller, String action) {
+            Invocation invocation = new Invocation();
+
+            String controllerClassName = getControllerClassName(controller, controllerPackage);
+            try {
+                Class<?> controllerClass = classLoader.loadClass(controllerClassName);
+                invocation.setControllerClass(controllerClass);
+                Method actionMethod = controllerClass.getMethod(action, Params.class);
+                invocation.setActionMethod(actionMethod);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            } catch (NoSuchMethodException e) {
+                // ignore
+            }
+            return invocation;
         }
 
-        if (result == null) {
-            result = dispatch(route, false, invoke_Method);
-        } else if (result instanceof Dispatch) {
-            Route newRoute = ((Dispatch) result).getRoute();
-            boolean isSamePackage = route.isSamePackage(newRoute);
-            result = dispatch(newRoute, !isSamePackage || invoke_Controller, !isSamePackage || invoke_Method);
+        private String getControllerClassName(String controller, String controllerPackage) {
+            return (controllerPackage != null? controllerPackage + ".": "")
+                    + controller.substring(0, 1).toUpperCase()
+                    + controller.substring(1, controller.length())
+                    + "Controller";
         }
-
-        return result;
-    }
-
-
-    private Invocation getInvocation(String controllerPackage, String controller, String action) {
-        Invocation invocation = new Invocation();
-
-        String controllerClassName = getControllerClassName(controller, controllerPackage);
-        try {
-            Class<?> controllerClass = classLoader.loadClass(controllerClassName);
-            invocation.setControllerClass(controllerClass);
-            Method actionMethod = controllerClass.getMethod(action, Params.class);
-            invocation.setActionMethod(actionMethod);
-        } catch (ClassNotFoundException e) {
-            // ignore
-        } catch (NoSuchMethodException e) {
-            // ignore
-        }
-        return invocation;
-    }
-
-    private String getControllerClassName(String controller, String controllerPackage) {
-        return (controllerPackage != null? controllerPackage + ".": "")
-                + controller.substring(0, 1).toUpperCase()
-                + controller.substring(1, controller.length())
-                + "Controller";
     }
 
     public class Invocation {
         private Class<?> controllerClass;
         private Method actionMethod;
 
-        public Class<?> getControllerClass() {
-            return controllerClass;
-        }
-
         public void setControllerClass(Class<?> controllerClass) {
             this.controllerClass = controllerClass;
-        }
-
-        public Method getActionMethod() {
-            return actionMethod;
         }
 
         public void setActionMethod(Method actionMethod) {
@@ -157,6 +155,7 @@ public class Invoker {
                 try {
                     Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
                     setRouteMethod.invoke(controllerInstance, route);
+                    init(controllerInstance);
                 } catch (NoSuchMethodException e) {
                     // we tried
                 } catch (IllegalAccessException e) {
@@ -184,6 +183,19 @@ public class Invoker {
             }
 
             return result;
+        }
+
+        void init(Object controllerInstance) {
+            try {
+                Method setRouteMethod = controllerClass.getMethod("_init");
+                setRouteMethod.invoke(controllerInstance);
+            } catch (NoSuchMethodException e) {
+                // we tried
+            } catch (IllegalAccessException e) {
+                // we tried
+            } catch (InvocationTargetException e) {
+                // we tried
+            }
         }
     }
 }

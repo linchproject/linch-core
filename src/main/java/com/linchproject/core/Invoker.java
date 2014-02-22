@@ -151,37 +151,38 @@ public class Invoker {
         public Result invoke(Route route) {
             Result result;
 
-            Object controllerInstance = null;
             try {
-                controllerInstance = controllerClass.newInstance();
+                Object controllerInstance = controllerClass.newInstance();
+
+                try {
+                    Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
+                    setRouteMethod.invoke(controllerInstance, route);
+                } catch (NoSuchMethodException e) {
+                    // we tried
+                } catch (IllegalAccessException e) {
+                    // we tried
+                } catch (InvocationTargetException e) {
+                    // we tried
+                }
+
+                if (injector != null) {
+                    injector.inject(controllerInstance);
+                }
+
+                try {
+                    result = (Result) actionMethod.invoke(controllerInstance, new Params(route.getParameterMap()));
+                } catch (IllegalAccessException e) {
+                    result = new Error("Cannot access '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
+                } catch (InvocationTargetException e) {
+                    result = new Error("Cannot invoke '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
+                }
+
             } catch (InstantiationException e) {
                 result = new Error("Cannon instantiate '" + controllerClass.getName() + "'", e);
             } catch (IllegalAccessException e) {
                 result = new Error("Cannot access '" + controllerClass.getName() + "'", e);
             }
 
-            try {
-                Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
-                setRouteMethod.invoke(controllerInstance, route);
-            } catch (NoSuchMethodException e) {
-                // we tried
-            } catch (IllegalAccessException e) {
-                // we tried
-            } catch (InvocationTargetException e) {
-                // we tried
-            }
-
-            if (injector != null) {
-                injector.inject(controllerInstance);
-            }
-
-            try {
-                result = (Result) actionMethod.invoke(controllerInstance, new Params(route.getParameterMap()));
-            } catch (IllegalAccessException e) {
-                result = new Error("Cannot access '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
-            } catch (InvocationTargetException e) {
-                result = new Error("Cannot invoke '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
-            }
             return result;
         }
 

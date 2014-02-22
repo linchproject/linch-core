@@ -22,6 +22,9 @@ public class RouteTest {
         route.setPath("d/e");
         assertEquals("/a/b/d/e", route.getPath());
 
+        route.setPath("/a/b?next=/");
+        route.setPath("c");
+        assertEquals("/a/c", route.getPath());
     }
 
     @Test

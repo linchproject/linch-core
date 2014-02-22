@@ -35,7 +35,7 @@ public abstract class Route {
         if (path.startsWith("/")) {
             this.path = path;
         } else {
-            this.path = this.path.substring(0, this.path.lastIndexOf("/") + 1) + path;
+            this.path = this.path.substring(0, this.path.substring(0, getLastCursor()).lastIndexOf("/") + 1) + path;
         }
         this.cursor = 0;
     }

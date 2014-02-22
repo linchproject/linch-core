@@ -185,14 +185,5 @@ public class Invoker {
 
             return result;
         }
-
-        public class ControllerIllegalAccessException extends IllegalAccessException {
-            public ControllerIllegalAccessException() {
-            }
-
-            public ControllerIllegalAccessException(String s) {
-                super(s);
-            }
-        }
     }
 }

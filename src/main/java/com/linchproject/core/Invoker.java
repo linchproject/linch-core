@@ -8,28 +8,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * Pseudo Code:
- *
- * invoke(route)
- *   dispatch(route, true, true)
- *
- * dispatch(route, call_controller, call_method)
- *   if (call_controller)
- *     result = invoke(_controller, _method)
- *     call_controller = false;
- *   else
- *     if (call_method)
- *       result = invoke(route.contoller, _method)
- *       call_method = false
- *     else
- *       result = invoke(route.controllerHistory, route.action)
- *
- *   if (result == dispatch)
- *     dispatch(result.route, false, true)
- *
- *   return result
- *
- *
  * @author Georg Schmidl
  */
 public class Invoker {
@@ -57,43 +35,70 @@ public class Invoker {
 
         public Result dispatch(Route route) {
             Result result = null;
+            Exception exception = null;
 
             String controllerPackage = route.getControllerPackage();
             String controller;
             String action;
 
-            if (!controllerHistory.keySet().contains(controllerPackage)) {
-                controller = "_";
-                action = "_";
-                controllerHistory.put(controllerPackage, new ArrayList<String>());
-            } else {
-                if (!controllerHistory.get(controllerPackage).contains(route.getController())) {
-                    controller = route.getController();
+            try {
+                if (!controllerHistory.keySet().contains(controllerPackage)) {
+                    controller = "_";
                     action = "_";
-                    controllerHistory.get(controllerPackage).add(route.getController());
+                    controllerHistory.put(controllerPackage, new ArrayList<String>());
                 } else {
-                    controller = route.getController();
-                    action = route.getAction();
+                    if (!controllerHistory.get(controllerPackage).contains(route.getController())) {
+                        controller = route.getController();
+                        action = "_";
+                        controllerHistory.get(controllerPackage).add(route.getController());
+                    } else {
+                        controller = route.getController();
+                        action = route.getAction();
+                    }
                 }
-            }
 
-            Invocation invocation = getInvocation(controllerPackage, controller, action);
-            if (invocation.canInvoke()) {
-                result = invocation.invoke(route);
-            } else if (!"_".equals(controller)  && !invocation.controllerExists()) {
-                result = new Error("Cannot find controller '" + route.getController() + "'");
-            } else if (!"_".equals(action) && !invocation.actionExists()) {
-                result = new Error("Cannot find action '" + route.getAction() + "'");
+                Invocation invocation = getInvocation(controllerPackage, controller, action);
+                if (invocation.canInvoke()) {
+                    result = invocation.invoke(route);
+                } else if (!"_".equals(controller)  && !invocation.controllerExists()) {
+                    result = new Error("Cannot find controller '" + route.getController() + "'");
+                } else if (!"_".equals(action) && !invocation.actionExists()) {
+                    result = new Error("Cannot find action '" + route.getAction() + "'");
+                }
+            } catch (Exception e) {
+                result = new Error(e.getMessage(), e);
+                exception = e;
             }
 
             if (result == null) {
                 result = dispatch(route);
             } else if (result instanceof Dispatch) {
-                Route newRoute = ((Dispatch) result).getRoute();
-                result = dispatch(newRoute);
+                result = dispatch(((Dispatch) result).getRoute());
+            } else {
+                for (Object controllerInstance : controllerInstances.values()) {
+                    try {
+                        quit(controllerInstance, exception);
+                    } catch (InvocationException e) {
+                        result = new Error(e.getMessage(), e);
+                        exception = e;
+                    }
+                }
             }
 
             return result;
+        }
+
+        private void quit(Object controllerInstance, Exception exception) throws InvocationException {
+            try {
+                Method method = controllerInstance.getClass().getMethod("_quit", Exception.class);
+                method.invoke(controllerInstance, exception);
+            } catch (NoSuchMethodException e) {
+                // ok
+            } catch (IllegalAccessException e) {
+                // ok
+            } catch (InvocationTargetException e) {
+                throw new InvocationException("Error invoking'" + controllerInstance.getClass().getName() + "#" + "_quit" + "'", e);
+            }
         }
 
         private Invocation getInvocation(String controllerPackage, String controller, String action) {
@@ -106,9 +111,9 @@ public class Invoker {
                 Method actionMethod = controllerClass.getMethod(action, Params.class);
                 invocation.setActionMethod(actionMethod);
             } catch (ClassNotFoundException e) {
-                // ignore
+                // ok
             } catch (NoSuchMethodException e) {
-                // ignore
+                // ok
             }
             return invocation;
         }
@@ -144,7 +149,7 @@ public class Invoker {
                 return controllerExists() && actionExists();
             }
 
-            public Result invoke(Route route) {
+            public Result invoke(Route route) throws InvocationException {
                 Result result;
 
                 try {
@@ -160,11 +165,11 @@ public class Invoker {
                         Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
                         setRouteMethod.invoke(controllerInstance, route);
                     } catch (NoSuchMethodException e) {
-                        // we tried
+                        // ok
                     } catch (IllegalAccessException e) {
-                        // we tried
+                        // ok
                     } catch (InvocationTargetException e) {
-                        // we tried
+                        throw new InvocationException("Error invoking'" + controllerClass.getName() + "#" + "_setRoute" + "'", e);
                     }
 
                     if (injector != null) {
@@ -178,32 +183,38 @@ public class Invoker {
                     try {
                         result = (Result) actionMethod.invoke(controllerInstance, new Params(route.getParameterMap()));
                     } catch (IllegalAccessException e) {
-                        result = new Error("Cannot access '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
+                        throw new InvocationException("Cannot access '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
                     } catch (InvocationTargetException e) {
-                        result = new Error("Cannot invoke '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
+                        throw new InvocationException("Error invoking '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
                     }
 
                 } catch (InstantiationException e) {
-                    result = new Error("Cannon instantiate '" + controllerClass.getName() + "'", e);
+                    throw new InvocationException("Cannon instantiate '" + controllerClass.getName() + "'", e);
                 } catch (IllegalAccessException e) {
-                    result = new Error("Cannot access '" + controllerClass.getName() + "'", e);
+                    throw new InvocationException("Cannot access '" + controllerClass.getName() + "'", e);
                 }
 
                 return result;
             }
 
-            void init(Object controllerInstance) {
+            private void init(Object controllerInstance) throws InvocationException {
                 try {
                     Method setRouteMethod = controllerClass.getMethod("_init");
                     setRouteMethod.invoke(controllerInstance);
                 } catch (NoSuchMethodException e) {
-                    // we tried
+                    // ok
                 } catch (IllegalAccessException e) {
-                    // we tried
+                    // ok
                 } catch (InvocationTargetException e) {
-                    // we tried
+                    throw new InvocationException("Error invoking'" + controllerInstance.getClass().getName() + "#" + "_init" + "'", e);
                 }
             }
+        }
+    }
+
+    public class InvocationException extends Exception {
+        public InvocationException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

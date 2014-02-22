@@ -110,5 +110,44 @@ public class InvokerTest {
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("ab", Trail.get());
+
+
+        route = new RouteImpl();
+        route.setControllerPackage("test.controllers");
+        route.setPath("/initFail");
+        result = invoker.invoke(route);
+        assertTrue(result instanceof Error);
+        assertEquals("fail", ((Error) result).getException().getCause().getCause().getMessage());
+    }
+
+    @Test
+    public void testQuit() throws Exception {
+        Invoker invoker = new Invoker(getClass().getClassLoader());
+
+        Result result;
+        Route route;
+
+        Trail.clear();
+        route = new RouteImpl();
+        route.setControllerPackage("test.controllers");
+        route.setPath("/quit/index");
+        result = invoker.invoke(route);
+        assertTrue(result instanceof Success);
+        assertEquals("a", Trail.get());
+
+        Trail.clear();
+        route = new RouteImpl();
+        route.setControllerPackage("test.controllers");
+        route.setPath("/quit/fail");
+        result = invoker.invoke(route);
+        assertTrue(result instanceof Error);
+        assertEquals("exception", Trail.get());
+
+        route = new RouteImpl();
+        route.setControllerPackage("test.controllers");
+        route.setPath("/quitFail");
+        result = invoker.invoke(route);
+        assertTrue(result instanceof Error);
+        assertEquals("fail", ((Error) result).getException().getCause().getCause().getMessage());
     }
 }

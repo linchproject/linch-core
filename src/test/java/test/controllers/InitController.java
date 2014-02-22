@@ -19,4 +19,7 @@ public class InitController extends Controller {
         return success("a");
     }
 
+    public Result init(Params params) {
+        return dispatch(route.shift("subpackage"));
+    }
 }

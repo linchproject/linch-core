@@ -34,127 +34,164 @@ import java.lang.reflect.Method;
 public class Invoker {
 
     private ClassLoader classLoader;
-    private String controllersPackage;
     private Injector injector;
 
-    public Invoker(ClassLoader classLoader, String controllersPackage) {
-        this(classLoader, controllersPackage, null);
+    public Invoker(ClassLoader classLoader) {
+        this(classLoader, null);
     }
 
-    public Invoker(ClassLoader classLoader, String controllersPackage, Injector injector) {
+    public Invoker(ClassLoader classLoader, Injector injector) {
         this.classLoader = classLoader;
-        this.controllersPackage = controllersPackage;
         this.injector = injector;
     }
 
     public Result invoke(Route route) {
-        String subPackage = route.getSubPackage();
-        String controller = route.getController();
-        String action = route.getAction();
-        Params params = new Params(route.getParameterMap());
+        return dispatch(route, true, true);
+    }
 
-        Result result;
+    public Result dispatch(Route route, boolean invoke_Controller, boolean invoke_Method) {
+        Result result = null;
 
+        String controllerPackage = route.getControllerPackage();
+        String controller;
+        String action;
+
+        if (invoke_Controller) {
+            controller = "_";
+            action = "_";
+            invoke_Controller = false;
+        } else {
+            if (invoke_Method) {
+                controller = route.getController();
+                action = "_";
+                invoke_Method = false;
+            } else {
+                controller = route.getController();
+                action = route.getAction();
+            }
+        }
+
+        Invocation invocation = getInvocation(controllerPackage, controller, action);
+        if (invocation.canInvoke()) {
+            result = invocation.invoke(route);
+        } else if (!"_".equals(controller)  && !invocation.controllerExists()) {
+            result = new Error("Cannot find controller '" + route.getController() + "'");
+        } else if (!"_".equals(action) && !invocation.actionExists()) {
+            result = new Error("Cannot find action '" + route.getAction() + "'");
+        }
+
+        if (result == null) {
+            result = dispatch(route, false, invoke_Method);
+        } else if (result instanceof Dispatch) {
+            Route newRoute = ((Dispatch) result).getRoute();
+            boolean isSamePackage = route.isSamePackage(newRoute);
+            result = dispatch(newRoute, !isSamePackage || invoke_Controller, !isSamePackage || invoke_Method);
+        }
+
+        return result;
+    }
+
+
+    private Invocation getInvocation(String controllerPackage, String controller, String action) {
+        Invocation invocation = new Invocation();
+
+        String controllerClassName = getControllerClassName(controller, controllerPackage);
         try {
-            String controllerClassName = getControllerClassName(controller, subPackage);
-            Class<?> controllerClass = this.classLoader.loadClass(controllerClassName);
+            Class<?> controllerClass = classLoader.loadClass(controllerClassName);
+            invocation.setControllerClass(controllerClass);
+            Method actionMethod = controllerClass.getMethod(action, Params.class);
+            invocation.setActionMethod(actionMethod);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        } catch (NoSuchMethodException e) {
+            // ignore
+        }
+        return invocation;
+    }
 
-            Object controllerInstance = controllerClass.newInstance();
+    private String getControllerClassName(String controller, String controllerPackage) {
+        return (controllerPackage != null? controllerPackage + ".": "")
+                + controller.substring(0, 1).toUpperCase()
+                + controller.substring(1, controller.length())
+                + "Controller";
+    }
 
-            Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
-            setRouteMethod.invoke(controllerInstance, route);
+    public class Invocation {
+        private Class<?> controllerClass;
+        private Method actionMethod;
+
+        public Class<?> getControllerClass() {
+            return controllerClass;
+        }
+
+        public void setControllerClass(Class<?> controllerClass) {
+            this.controllerClass = controllerClass;
+        }
+
+        public Method getActionMethod() {
+            return actionMethod;
+        }
+
+        public void setActionMethod(Method actionMethod) {
+            this.actionMethod = actionMethod;
+        }
+
+        boolean controllerExists() {
+            return controllerClass != null;
+        }
+
+        boolean actionExists() {
+            return actionMethod != null;
+        }
+
+        boolean canInvoke() {
+            return controllerExists() && actionExists();
+        }
+
+        public Result invoke(Route route) {
+            Result result;
+
+            Object controllerInstance = null;
+            try {
+                controllerInstance = controllerClass.newInstance();
+            } catch (InstantiationException e) {
+                result = new Error("Cannon instantiate '" + controllerClass.getName() + "'", e);
+            } catch (IllegalAccessException e) {
+                result = new Error("Cannot access '" + controllerClass.getName() + "'", e);
+            }
+
+            try {
+                Method setRouteMethod = controllerClass.getMethod("setRoute", Route.class);
+                setRouteMethod.invoke(controllerInstance, route);
+            } catch (NoSuchMethodException e) {
+                // we tried
+            } catch (IllegalAccessException e) {
+                // we tried
+            } catch (InvocationTargetException e) {
+                // we tried
+            }
 
             if (injector != null) {
                 injector.inject(controllerInstance);
             }
 
-            Method initMethod = controllerClass.getMethod("_init");
-            Method quitMethod = controllerClass.getMethod("_quit", Exception.class);
-
-            initMethod.invoke(controllerInstance);
-
             try {
-                Method _Method = controllerClass.getMethod("_", Params.class);
-
-                Result _Result;
-
-                try {
-                    _Result = (Result) _Method.invoke(controllerInstance, params);
-                } catch (Exception e){
-                    quitMethod.invoke(controllerInstance, e);
-                    throw e;
-                }
-
-                if (_Result instanceof Dispatch) {
-                    Route _Route = ((Dispatch) _Result).getRoute();
-                    String _SubPackage = _Route.getSubPackage();
-                    String _Controller = _Route.getController();
-                    String _ControllerClassName = getControllerClassName(_Controller, _SubPackage);
-
-                    if (!controllerClassName.equals(_ControllerClassName)) {
-                        result = invoke(_Route);
-
-                    } else {
-                        action = _Route.getAction();
-                        result = invokeAction(action, controller, params, controllerClass, controllerInstance, quitMethod);
-                    }
-                } else {
-                    result = _Result;
-                }
-            } catch (NoSuchMethodException e) {
-                result = invokeAction(action, controller, params, controllerClass, controllerInstance, quitMethod);
+                result = (Result) actionMethod.invoke(controllerInstance, new Params(route.getParameterMap()));
+            } catch (IllegalAccessException e) {
+                result = new Error("Cannot access '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
+            } catch (InvocationTargetException e) {
+                result = new Error("Cannot invoke '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
             }
-            quitMethod.invoke(controllerInstance, new Exception[]{null});
-
-        } catch (ClassNotFoundException e) {
-            result = new Error("Cannot find controller '" + controller + "'");
-        } catch (IllegalAccessException e) {
-            result = new Error("Cannot access controller '" + controller + "'", e);
-        } catch (InstantiationException e) {
-            result = new Error("Cannot instantiate controller '" + controller + "'", e);
-
-        } catch (Exception e) {
-            result = new Error("An error occurred", e);
+            return result;
         }
 
-        return result;
-    }
-
-    private Result invokeAction(String action, String controller, Params params, Class<?> controllerClass, Object controllerInstance, Method quitMethod) throws Exception {
-        Result result;
-        try {
-            Method actionMethod = controllerClass.getMethod(action, Params.class);
-
-            try {
-                result = (Result) actionMethod.invoke(controllerInstance, params);
-
-            } catch (Exception e){
-                quitMethod.invoke(controllerInstance, e);
-                throw e;
+        public class ControllerIllegalAccessException extends IllegalAccessException {
+            public ControllerIllegalAccessException() {
             }
 
-            if (result instanceof Dispatch) {
-                result = invoke(((Dispatch) result).getRoute());
+            public ControllerIllegalAccessException(String s) {
+                super(s);
             }
-        } catch (NoSuchMethodException e) {
-            quitMethod.invoke(controllerInstance, e);
-            result = new Error("Cannot find action '" + action + "' in controller '" + controller + "'");
-        } catch (IllegalAccessException e) {
-            quitMethod.invoke(controllerInstance, e);
-            result = new Error("Cannot access action '" + action + "' in controller '" + controller + "'", e);
-        } catch (InvocationTargetException e) {
-            quitMethod.invoke(controllerInstance, e);
-            result = new Error("Cannot invoke action '" + action + "' in controller '" + controller + "'", e);
         }
-        return result;
-    }
-
-    private String getControllerClassName(String controller, String subPackage) {
-        return controllersPackage
-                + (subPackage != null? "." + subPackage: "")
-                + "."
-                + controller.substring(0, 1).toUpperCase()
-                + controller.substring(1, controller.length())
-                + "Controller";
     }
 }

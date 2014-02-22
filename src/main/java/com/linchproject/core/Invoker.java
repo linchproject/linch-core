@@ -5,8 +5,7 @@ import com.linchproject.core.results.Error;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Pseudo Code:
@@ -23,7 +22,7 @@ import java.util.Map;
  *       result = invoke(route.contoller, _method)
  *       call_method = false
  *     else
- *       result = invoke(route.controller, route.action)
+ *       result = invoke(route.controllerHistory, route.action)
  *
  *   if (result == dispatch)
  *     dispatch(result.route, false, true)
@@ -53,28 +52,25 @@ public class Invoker {
 
     public class Dispatcher {
 
+        private Map<String, List<String>> controllerHistory = new HashMap<String, List<String>>();
         private Map<Class<?>, Object> controllerInstances = new LinkedHashMap<Class<?>, Object>();
 
         public Result dispatch(Route route) {
-            return dispatch(route, true, true);
-        }
-
-        public Result dispatch(Route route, boolean invoke_Controller, boolean invoke_Method) {
             Result result = null;
 
             String controllerPackage = route.getControllerPackage();
             String controller;
             String action;
 
-            if (invoke_Controller) {
+            if (!controllerHistory.keySet().contains(controllerPackage)) {
                 controller = "_";
                 action = "_";
-                invoke_Controller = false;
+                controllerHistory.put(controllerPackage, new ArrayList<String>());
             } else {
-                if (invoke_Method) {
+                if (!controllerHistory.get(controllerPackage).contains(route.getController())) {
                     controller = route.getController();
                     action = "_";
-                    invoke_Method = false;
+                    controllerHistory.get(controllerPackage).add(route.getController());
                 } else {
                     controller = route.getController();
                     action = route.getAction();
@@ -91,11 +87,10 @@ public class Invoker {
             }
 
             if (result == null) {
-                result = dispatch(route, false, invoke_Method);
+                result = dispatch(route);
             } else if (result instanceof Dispatch) {
                 Route newRoute = ((Dispatch) result).getRoute();
-                boolean isSamePackage = route.isSamePackage(newRoute);
-                result = dispatch(newRoute, !isSamePackage || invoke_Controller, !isSamePackage || invoke_Method);
+                result = dispatch(newRoute);
             }
 
             return result;

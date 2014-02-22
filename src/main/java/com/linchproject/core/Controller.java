@@ -32,6 +32,12 @@ public abstract class Controller {
         return new Redirect(route);
     }
 
+    protected Result redirect(String path)  {
+        Route route = this.route.copy();
+        route.setPath(path);
+        return new Redirect(route);
+    }
+
     protected Result dispatch(Route route)  {
         return new Dispatch(route);
     }

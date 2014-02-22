@@ -199,8 +199,8 @@ public class Invoker {
 
             private void init(Object controllerInstance) throws InvocationException {
                 try {
-                    Method setRouteMethod = controllerClass.getMethod("_init");
-                    setRouteMethod.invoke(controllerInstance);
+                    Method method = controllerClass.getMethod("_init");
+                    method.invoke(controllerInstance);
                 } catch (NoSuchMethodException e) {
                     // ok
                 } catch (IllegalAccessException e) {

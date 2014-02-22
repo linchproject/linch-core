@@ -94,5 +94,13 @@ public class InvokerTest {
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("a", Trail.get());
+
+        Trail.clear();
+        route = new RouteImpl();
+        route.setControllerPackage("test.controllers");
+        route.setPath("/init2/index");
+        result = invoker.invoke(route);
+        assertTrue(result instanceof Success);
+        assertEquals("a", Trail.get());
     }
 }

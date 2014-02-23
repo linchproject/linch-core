@@ -34,6 +34,8 @@ public abstract class Route {
     public void setPath(String path) {
         if (path.startsWith("/")) {
             this.path = path;
+        } else if (path.equals(".")) {
+            this.path = this.path.substring(0, getLastCursor());
         } else {
             this.path = this.path.substring(0, this.path.substring(0, getLastCursor()).lastIndexOf("/") + 1) + path;
         }

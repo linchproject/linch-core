@@ -173,7 +173,11 @@ public class Invoker {
                     }
 
                     if (injector != null) {
-                        injector.inject(controllerInstance);
+                        try {
+                            injector.inject(controllerInstance);
+                        } catch (Exception e) {
+                            throw new InvocationException("Error injecting '" + controllerClass.getName() + "'", e);
+                        }
                     }
 
                     if (init) {

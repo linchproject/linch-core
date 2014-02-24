@@ -145,8 +145,4 @@ public abstract class Route {
     protected abstract Route newRoute();
 
     public abstract String getUrl();
-
-    public abstract String getUserId();
-
-    public abstract void setUserId(String userId);
 }

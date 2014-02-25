@@ -25,15 +25,15 @@ public class Invoker {
     }
 
     public Result invoke(Route route) {
-        return new Dispatcher().dispatch(route);
+        return new InternalInvoker().invoke(route);
     }
 
-    public class Dispatcher {
+    public class InternalInvoker {
 
         private Map<String, List<String>> controllerHistory = new HashMap<String, List<String>>();
         private Map<Class<?>, Object> controllerInstances = new LinkedHashMap<Class<?>, Object>();
 
-        public Result dispatch(Route route) {
+        public Result invoke(Route route) {
             Result result = null;
             Exception exception = null;
 
@@ -71,9 +71,9 @@ public class Invoker {
             }
 
             if (result == null) {
-                result = dispatch(route);
+                result = invoke(route);
             } else if (result instanceof Dispatch) {
-                result = dispatch(((Dispatch) result).getRoute());
+                result = invoke(((Dispatch) result).getRoute());
             } else {
                 for (Object controllerInstance : controllerInstances.values()) {
                     try {

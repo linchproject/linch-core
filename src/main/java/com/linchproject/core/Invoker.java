@@ -35,7 +35,6 @@ public class Invoker {
 
         public Result invoke(Route route) {
             Result result = null;
-            Exception exception = null;
 
             String controllerPackage = route.getControllerPackage();
             String controller;
@@ -67,7 +66,6 @@ public class Invoker {
                 }
             } catch (Exception e) {
                 result = new Error(e.getMessage(), e);
-                exception = e;
             }
 
             if (result == null) {
@@ -77,28 +75,14 @@ public class Invoker {
             } else {
                 for (Object controllerInstance : controllerInstances.values()) {
                     try {
-                        quit(controllerInstance, exception);
+                        invokeMethod(controllerInstance, "destroy");
                     } catch (InvocationException e) {
                         result = new Error(e.getMessage(), e);
-                        exception = e;
                     }
                 }
             }
 
             return result;
-        }
-
-        private void quit(Object controllerInstance, Exception exception) throws InvocationException {
-            try {
-                Method method = controllerInstance.getClass().getMethod("_quit", Exception.class);
-                method.invoke(controllerInstance, exception);
-            } catch (NoSuchMethodException e) {
-                // ok
-            } catch (IllegalAccessException e) {
-                // ok
-            } catch (InvocationTargetException e) {
-                throw new InvocationException("Error invoking'" + controllerInstance.getClass().getName() + "#" + "_quit" + "'", e);
-            }
         }
 
         private Invocation getInvocation(String controllerPackage, String controller, String action) {
@@ -123,6 +107,19 @@ public class Invoker {
                     + controller.substring(0, 1).toUpperCase()
                     + controller.substring(1, controller.length())
                     + "Controller";
+        }
+
+        private void invokeMethod(Object controllerInstance, String methodName) throws InvocationException {
+            try {
+                Method method = controllerInstance.getClass().getMethod(methodName);
+                method.invoke(controllerInstance);
+            } catch (NoSuchMethodException e) {
+                // ok
+            } catch (IllegalAccessException e) {
+                // ok
+            } catch (InvocationTargetException e) {
+                throw new InvocationException("Error invoking'" + controllerInstance.getClass().getName() + "#" + methodName + "'", e);
+            }
         }
 
         public class Invocation {
@@ -181,7 +178,7 @@ public class Invoker {
                     }
 
                     if (init) {
-                        init(controllerInstance);
+                        invokeMethod(controllerInstance, "init");
                     }
 
                     try {
@@ -199,19 +196,6 @@ public class Invoker {
                 }
 
                 return result;
-            }
-
-            private void init(Object controllerInstance) throws InvocationException {
-                try {
-                    Method method = controllerClass.getMethod("_init");
-                    method.invoke(controllerInstance);
-                } catch (NoSuchMethodException e) {
-                    // ok
-                } catch (IllegalAccessException e) {
-                    // ok
-                } catch (InvocationTargetException e) {
-                    throw new InvocationException("Error invoking'" + controllerInstance.getClass().getName() + "#" + "_init" + "'", e);
-                }
             }
         }
     }

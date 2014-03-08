@@ -135,14 +135,6 @@ public class InvokerTest {
         assertTrue(result instanceof Success);
         assertEquals("a", Trail.get());
 
-        Trail.clear();
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/quit/fail");
-        result = invoker.invoke(route);
-        assertTrue(result instanceof Error);
-        assertEquals("exception", Trail.get());
-
         route = new RouteImpl();
         route.setControllerPackage("test.controllers");
         route.setPath("/quitFail");

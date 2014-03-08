@@ -9,7 +9,7 @@ import com.linchproject.core.Result;
  */
 public class InitFailController extends Controller {
     @Override
-    public void _init() {
+    public void init() {
         throw new RuntimeException("fail");
     }
 

@@ -11,7 +11,7 @@ import test.Trail;
 public class Init2Controller extends Controller {
 
     @Override
-    public void _init() {
+    public void init() {
         Trail.append("a");
     }
 

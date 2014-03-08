@@ -12,14 +12,6 @@ public abstract class Controller {
 
     protected Route route;
 
-    public void _init() {
-
-    }
-
-    public void _quit(Exception e) {
-
-    }
-
     protected Result success(String content) {
         return new Success(content);
     }
@@ -44,6 +36,14 @@ public abstract class Controller {
 
     protected Result error(String message)  {
         return new Error(message);
+    }
+
+    public void init() {
+
+    }
+
+    public void destroy() {
+
     }
 
     public void setRoute(Route route) {

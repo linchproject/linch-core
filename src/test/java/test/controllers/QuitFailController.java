@@ -9,7 +9,7 @@ import com.linchproject.core.Result;
  */
 public class QuitFailController extends Controller {
     @Override
-    public void _quit(Exception e) {
+    public void destroy() {
         throw new RuntimeException("fail");
     }
 

@@ -11,13 +11,8 @@ import test.Trail;
 public class QuitController extends Controller {
 
     @Override
-    public void _quit(Exception e) {
-        if (e == null) {
-            Trail.append("a");
-        } else {
-            Trail.append("exception");
-        }
-
+    public void destroy() {
+        Trail.append("a");
     }
 
     public Result index(Params params) {

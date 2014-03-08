@@ -25,13 +25,23 @@ public class Invoker {
     }
 
     public Result invoke(Route route) {
-        return new InternalInvoker().invoke(route);
+        return invoke(route, injector);
+    }
+
+    public Result invoke(Route route, Injector injector) {
+        return new InternalInvoker(injector).invoke(route);
     }
 
     public class InternalInvoker {
 
+        private Injector injector;
+
         private Map<String, List<String>> controllerHistory = new HashMap<String, List<String>>();
         private Map<Class<?>, Object> controllerInstances = new LinkedHashMap<Class<?>, Object>();
+
+        public InternalInvoker(Injector injector) {
+            this.injector = injector;
+        }
 
         public Result invoke(Route route) {
             Result result = null;

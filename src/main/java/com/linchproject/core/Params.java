@@ -10,8 +10,6 @@ import java.util.Map;
  */
 public class Params {
 
-    private static Params emptyParams;
-
     private Map<String, String[]> map;
 
     public Params() {
@@ -28,7 +26,7 @@ public class Params {
      * @param key the parameter key
      * @return the parameter value
      */
-    public String getValue(String key) {
+    public String get(String key) {
         String[] value = map.get(key);
         return value != null && value.length > 0? value[0]: null;
     }
@@ -39,7 +37,7 @@ public class Params {
      * @param key the parameter key
      * @return the parameter values
      */
-    public String[] getValues(String key) {
+    public String[] getAll(String key) {
         return map.get(key);
     }
 
@@ -50,12 +48,5 @@ public class Params {
      */
     public Map<String, String[]> getMap() {
         return map;
-    }
-
-    public static Params getEmptyParams() {
-        if (emptyParams == null) {
-            emptyParams = new Params();
-        }
-        return emptyParams;
     }
 }

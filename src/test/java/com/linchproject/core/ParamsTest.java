@@ -27,17 +27,17 @@ public class ParamsTest {
     @Test
     public void testGetValue() throws Exception {
         Params params = new Params(this.parameterMap);
-        assertEquals("b", params.getValue("a"));
-        assertEquals("bb", params.getValue("aa"));
-        assertNull(params.getValue("invalid"));
+        assertEquals("b", params.get("a"));
+        assertEquals("bb", params.get("aa"));
+        assertNull(params.get("invalid"));
     }
 
     @Test
     public void testGetValues() throws Exception {
         Params params = new Params(this.parameterMap);
-        assertArrayEquals(new String[]{"b"}, params.getValues("a"));
-        assertArrayEquals(new String[]{"bb", "cc"}, params.getValues("aa"));
-        assertNull(params.getValue("invalid"));
+        assertArrayEquals(new String[]{"b"}, params.getAll("a"));
+        assertArrayEquals(new String[]{"bb", "cc"}, params.getAll("aa"));
+        assertNull(params.getAll("invalid"));
     }
 
     @Test

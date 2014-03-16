@@ -31,14 +31,30 @@ public abstract class Route {
         return path;
     }
 
+    /**
+     * Replaces the path with a new path. The new path can be absolute or
+     * relative. If it is absolute (starts with a slash), the old path will
+     * be replaced. If it is relative, it will be appended to the old path.
+     *
+     * @param path new path
+     */
     public void setPath(String path) {
         if (path.startsWith("/")) {
             this.path = path;
         } else if (path.equals(".")) {
             this.path = this.path.substring(0, getLastCursor());
         } else {
-            this.path = this.path.substring(0, this.path.substring(0, getLastCursor()).lastIndexOf("/") + 1) + path;
+            int lastSlash = this.path.substring(0, getLastCursor()).lastIndexOf("/");
+            boolean endsWithController = this.path.length() > 1 && this.cursor == lastSlash;
+
+            if (endsWithController) {
+                this.path += "/" + path;
+            } else {
+                this.path = this.path.substring(0, lastSlash + 1) + path;
+            }
         }
+
+        this.path = normalize(this.path);
         this.cursor = 0;
     }
 
@@ -80,6 +96,32 @@ public abstract class Route {
     private int getLastCursor() {
         int lastCursor = path.indexOf("?");
         return lastCursor >= 0? lastCursor: path.length();
+    }
+
+    /**
+     * Removes trailing slashes and trialing default actions or controllers
+     *
+     * @param path path to be normalized
+     * @return the normalized path
+     */
+    private static String normalize(String path) {
+        String defaultControllerAction = "/" + DEFAULT_CONTROLLER + "/" + DEFAULT_ACTION;
+        String defaultAction = "/" + DEFAULT_ACTION;
+
+        if (path.length() > 0 && path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        if (path.endsWith(defaultControllerAction)) {
+            path = path.substring(0, path.length() - defaultControllerAction.length());
+        } else if (path.endsWith(defaultAction)) {
+            path = path.substring(0, path.length() - defaultAction.length());
+        }
+
+        if (path.length() <= 0) {
+            path = "/";
+        }
+        return path;
     }
 
     public Map<String, String[]> getParameterMap() {

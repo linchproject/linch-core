@@ -15,6 +15,8 @@ public class Invoker {
     private ClassLoader classLoader;
     private Injector injector;
 
+    private Set<String> controllerBlackList = new HashSet<String>();
+
     public Invoker(ClassLoader classLoader) {
         this(classLoader, null);
     }
@@ -30,7 +32,7 @@ public class Invoker {
 
     public class InternalInvoker {
 
-        private Map<String, List<String>> controllerHistory = new HashMap<String, List<String>>();
+        private Map<String, Set<String>> controllerHistory = new HashMap<String, Set<String>>();
         private Map<Class<?>, Object> controllerInstances = new LinkedHashMap<Class<?>, Object>();
 
         public Result invoke(Route route) {
@@ -44,7 +46,7 @@ public class Invoker {
                 if (!controllerHistory.keySet().contains(controllerPackage)) {
                     controller = "_";
                     action = "_";
-                    controllerHistory.put(controllerPackage, new ArrayList<String>());
+                    controllerHistory.put(controllerPackage, new HashSet<String>());
                 } else {
                     if (!controllerHistory.get(controllerPackage).contains(route.getController())) {
                         controller = route.getController();
@@ -56,14 +58,28 @@ public class Invoker {
                     }
                 }
 
-                Invocation invocation = getInvocation(controllerPackage, controller, action);
-                if (invocation.canInvoke()) {
-                    result = invocation.invoke(route);
-                } else if (!"_".equals(controller)  && !invocation.controllerExists()) {
-                    result = new Error("Cannot find controller '" + route.getController() + "'");
-                } else if (!"_".equals(action) && !invocation.actionExists()) {
-                    result = new Error("Cannot find action '" + route.getAction() + "'");
+                String controllerClassName = getControllerClassName(controllerPackage, controller);
+
+                if (!"_".equals(action) || !controllerBlackList.contains(controllerClassName)) {
+                    Invocation invocation = getInvocation(controllerClassName, action);
+                    if (invocation.canInvoke()) {
+                        result = invocation.invoke(route);
+
+                    } else if (!invocation.controllerExists()) {
+                        if (!"_".equals(controller)) {
+                            result = new Error("Cannot find controller '" + route.getController() + "'");
+                        } else {
+                            controllerBlackList.add(controllerClassName);
+                        }
+                    } else if (!invocation.actionExists()) {
+                        if (!"_".equals(action)) {
+                            result = new Error("Cannot find action '" + route.getAction() + "'");
+                        } else {
+                            controllerBlackList.add(controllerClassName);
+                        }
+                    }
                 }
+
             } catch (Exception e) {
                 result = new Error(e.getMessage(), e);
             }
@@ -85,10 +101,9 @@ public class Invoker {
             return result;
         }
 
-        private Invocation getInvocation(String controllerPackage, String controller, String action) {
+        private Invocation getInvocation(String controllerClassName, String action) {
             Invocation invocation = new Invocation();
 
-            String controllerClassName = getControllerClassName(controller, controllerPackage);
             try {
                 Class<?> controllerClass = classLoader.loadClass(controllerClassName);
                 invocation.setControllerClass(controllerClass);
@@ -102,7 +117,7 @@ public class Invoker {
             return invocation;
         }
 
-        private String getControllerClassName(String controller, String controllerPackage) {
+        private String getControllerClassName(String controllerPackage, String controller) {
             return (controllerPackage != null? controllerPackage + ".": "")
                     + controller.substring(0, 1).toUpperCase()
                     + controller.substring(1, controller.length())

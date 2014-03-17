@@ -16,8 +16,8 @@ public abstract class Controller {
         return new Success(content);
     }
 
-    protected Result binary(InputStream inputStream) {
-        return new Binary(inputStream);
+    protected Result binary(String fileName, InputStream inputStream) {
+        return new Binary(fileName, inputStream);
     }
 
     protected Result redirect(Route route)  {

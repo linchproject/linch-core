@@ -182,14 +182,19 @@ public abstract class Route {
         return route;
     }
 
-    public Route shift(String subPackage) {
+    public Route shift() {
         Route route = copy();
-        route.controllerPackage = route.controllerPackage != null? route.controllerPackage + "." + subPackage: subPackage;
 
         int nextCursor = route.getNextCursor();
         if (nextCursor >= 0) {
             route.cursor = nextCursor;
         }
+        return route;
+    }
+
+    public Route shift(String subPackage) {
+        Route route = shift();
+        route.controllerPackage = route.controllerPackage != null? route.controllerPackage + "." + subPackage: subPackage;
         return route;
     }
 

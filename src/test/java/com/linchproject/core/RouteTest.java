@@ -323,6 +323,18 @@ public class RouteTest {
         route = new RouteImpl();
         route.setPath("/b/c/d?1=1&1=2");
 
+        route = route.shift();
+
+        assertNull(route.getControllerPackage());
+        assertEquals("c", route.getController());
+        assertEquals("d", route.getAction());
+        assertNull(route.getAfterAction());
+        assertTrue(route.getParameterMap().size() == 1);
+        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
+
+        route = new RouteImpl();
+        route.setPath("/b/c/d?1=1&1=2");
+
         route = route.shift("z");
 
         assertEquals("z", route.getControllerPackage());

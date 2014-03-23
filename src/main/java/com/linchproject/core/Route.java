@@ -84,6 +84,15 @@ public abstract class Route {
         return nextNextCursor < lastCursor? path.substring(nextNextCursor + 1, lastCursor): null;
     }
 
+    public String getBeforeController() {
+        return cursor > 0? path.substring(0, cursor): null;
+    }
+
+    public String getBeforeAction() {
+        int nextCursor = getNextCursor();
+        return nextCursor > 0? path.substring(0, nextCursor): null;
+    }
+
     private int getNextCursor() {
         return getNextCursor(cursor);
     }

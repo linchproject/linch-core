@@ -172,6 +172,56 @@ public class RouteTest {
     }
 
     @Test
+    public void testGetBeforeController() throws Exception {
+        Route route;
+
+        route = new RouteImpl();
+        route.setPath("/");
+        assertNull(route.getBeforeController());
+
+        route = new RouteImpl();
+        route.setPath("/a");
+        assertNull(route.getBeforeController());
+
+        route = new RouteImpl();
+        route.setPath("/a/b");
+        assertNull("b", route.getBeforeController());
+
+        route = new RouteImpl();
+        route.setPath("/a/b");
+        route = route.shift("c");
+        assertEquals("/a", route.getBeforeController());
+
+    }
+
+    @Test
+    public void testGetBeforeAction() throws Exception {
+        Route route;
+
+        route = new RouteImpl();
+        route.setPath("/");
+        assertEquals("/", route.getBeforeAction());
+
+        route = new RouteImpl();
+        route.setPath("/a");
+        assertEquals("/a", route.getBeforeAction());
+
+        route = new RouteImpl();
+        route.setPath("/a/b");
+        assertEquals("/a", route.getBeforeAction());
+
+        route = new RouteImpl();
+        route.setPath("/a/b");
+        route = route.shift("c");
+        assertEquals("/a/b", route.getBeforeAction());
+
+        route = new RouteImpl();
+        route.setPath("/a/b/c");
+        route = route.shift("d");
+        assertEquals("/a/b", route.getBeforeAction());
+    }
+
+    @Test
     public void testGetParameterMap() throws Exception {
         Map<String, String[]> parameterMap = new HashMap<String, String[]>(){{
             put("a", new String[] {"b"});

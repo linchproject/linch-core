@@ -3,6 +3,7 @@ package test.controllers;
 import com.linchproject.core.Controller;
 import com.linchproject.core.Params;
 import com.linchproject.core.Result;
+import com.linchproject.core.Route;
 import test.Trail;
 
 /**
@@ -20,6 +21,9 @@ public class InitController extends Controller {
     }
 
     public Result init(Params params) {
-        return dispatch(route.shift("subpackage"));
+        Route route = this.route.copy();
+        route.shift();
+        route.addSubPackage("subpackage");
+        return dispatch(route);
     }
 }

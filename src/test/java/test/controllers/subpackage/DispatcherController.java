@@ -3,6 +3,7 @@ package test.controllers.subpackage;
 import com.linchproject.core.Controller;
 import com.linchproject.core.Params;
 import com.linchproject.core.Result;
+import com.linchproject.core.Route;
 
 /**
  * @author Georg Schmidl
@@ -10,6 +11,9 @@ import com.linchproject.core.Result;
 public class DispatcherController extends Controller {
 
     public Result _(Params params) {
-        return dispatch(route.shift("subsubpackage"));
+        Route route = this.route.copy();
+        route.shift();
+        route.addSubPackage("subsubpackage");
+        return dispatch(route);
     }
 }

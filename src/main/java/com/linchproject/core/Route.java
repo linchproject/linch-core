@@ -11,6 +11,7 @@ public abstract class Route {
     private static final String DEFAULT_ACTION = "index";
 
     private String controllerPackage;
+    private int packageRoot = -1;
 
     private String path;
     private int cursor;
@@ -25,6 +26,7 @@ public abstract class Route {
 
     public void setControllerPackage(String controllerPackage) {
         this.controllerPackage = controllerPackage;
+        this.packageRoot = this.controllerPackage != null ? controllerPackage.length() : -1;
     }
 
     public String getPath() {
@@ -60,37 +62,45 @@ public abstract class Route {
 
     public String getController() {
         int nextCursor = getNextCursor();
-        String controller = cursor < nextCursor? path.substring(cursor + 1, nextCursor): null;
-        return controller != null && controller.length() > 0? controller: DEFAULT_CONTROLLER;
+        String controller = cursor < nextCursor ? path.substring(cursor + 1, nextCursor) : null;
+        return controller != null && controller.length() > 0 ? controller : DEFAULT_CONTROLLER;
     }
 
     public String getAction() {
         int nextCursor = getNextCursor();
         int nextNextCursor = getNextCursor(nextCursor);
-        String action = nextCursor < nextNextCursor? path.substring(nextCursor + 1, nextNextCursor): null;
-        return action != null && action.length() > 0? action: DEFAULT_ACTION;
+        String action = nextCursor < nextNextCursor ? path.substring(nextCursor + 1, nextNextCursor) : null;
+        return action != null && action.length() > 0 ? action : DEFAULT_ACTION;
     }
 
     public String getAfterController() {
         int nextCursor = getNextCursor();
         int lastCursor = getLastCursor();
-        return nextCursor < lastCursor? path.substring(nextCursor + 1, lastCursor): null;
+        return nextCursor < lastCursor ? path.substring(nextCursor + 1, lastCursor) : null;
     }
 
     public String getAfterAction() {
         int nextCursor = getNextCursor();
         int nextNextCursor = getNextCursor(nextCursor);
         int lastCursor = getLastCursor();
-        return nextNextCursor < lastCursor? path.substring(nextNextCursor + 1, lastCursor): null;
+        return nextNextCursor < lastCursor ? path.substring(nextNextCursor + 1, lastCursor) : null;
     }
 
     public String getBeforeController() {
-        return cursor > 0? path.substring(0, cursor): null;
+        return cursor > 0 ? path.substring(0, cursor) : null;
     }
 
     public String getBeforeAction() {
         int nextCursor = getNextCursor();
-        return nextCursor > 0? path.substring(0, nextCursor): null;
+        return nextCursor > 0 ? path.substring(0, nextCursor) : null;
+    }
+
+    public boolean isDefaultController() {
+        return DEFAULT_CONTROLLER.equals(getController());
+    }
+
+    public boolean isDefaultAction() {
+        return DEFAULT_ACTION.equals(getAction());
     }
 
     private int getNextCursor() {
@@ -99,12 +109,12 @@ public abstract class Route {
 
     private int getNextCursor(int previousCursor) {
         int nextCursor = path.indexOf("/", previousCursor + 1);
-        return nextCursor >= 0 && nextCursor < getLastCursor()? nextCursor: getLastCursor();
+        return nextCursor >= 0 && nextCursor < getLastCursor() ? nextCursor : getLastCursor();
     }
 
     private int getLastCursor() {
         int lastCursor = path.indexOf("?");
-        return lastCursor >= 0? lastCursor: path.length();
+        return lastCursor >= 0 ? lastCursor : path.length();
     }
 
     /**
@@ -158,11 +168,11 @@ public abstract class Route {
             parameterMap = Collections.unmodifiableMap(parameterMap);
         }
 
-        return parameterMap == null? Collections.<String, String[]>emptyMap(): parameterMap;
+        return parameterMap == null ? Collections.<String, String[]>emptyMap() : parameterMap;
     }
 
     public boolean isSamePackage(Route route) {
-        return controllerPackage == null? route.controllerPackage == null:
+        return controllerPackage == null ? route.controllerPackage == null :
                 controllerPackage.equals(route.controllerPackage);
     }
 
@@ -174,27 +184,28 @@ public abstract class Route {
         return isSameController(route) && getAction().equals(route.getAction());
     }
 
+    public void shift() {
+        int nextCursor = getNextCursor();
+        if (nextCursor >= 0) {
+            cursor = nextCursor;
+        }
+    }
+
+    public void addSubPackage(String subPackage) {
+        controllerPackage = controllerPackage != null ? controllerPackage + "." + subPackage : subPackage;
+    }
+
+    public String getSubPackage() {
+        return controllerPackage != null && packageRoot + 1 < controllerPackage.length() ?
+                controllerPackage.substring(packageRoot + 1, controllerPackage.length()) : null;
+    }
+
     public Route copy() {
         Route route = newRoute();
         route.controllerPackage = controllerPackage;
+        route.packageRoot = packageRoot;
         route.path = path;
         route.cursor = cursor;
-        return route;
-    }
-
-    public Route shift() {
-        Route route = copy();
-
-        int nextCursor = route.getNextCursor();
-        if (nextCursor >= 0) {
-            route.cursor = nextCursor;
-        }
-        return route;
-    }
-
-    public Route shift(String subPackage) {
-        Route route = shift();
-        route.controllerPackage = route.controllerPackage != null? route.controllerPackage + "." + subPackage: subPackage;
         return route;
     }
 

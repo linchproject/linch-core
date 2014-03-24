@@ -189,7 +189,7 @@ public class RouteTest {
 
         route = new RouteImpl();
         route.setPath("/a/b");
-        route = route.shift("c");
+        route.shift();
         assertEquals("/a", route.getBeforeController());
 
     }
@@ -212,12 +212,12 @@ public class RouteTest {
 
         route = new RouteImpl();
         route.setPath("/a/b");
-        route = route.shift("c");
+        route.shift();
         assertEquals("/a/b", route.getBeforeAction());
 
         route = new RouteImpl();
         route.setPath("/a/b/c");
-        route = route.shift("d");
+        route.shift();
         assertEquals("/a/b", route.getBeforeAction());
     }
 
@@ -323,21 +323,8 @@ public class RouteTest {
         route = new RouteImpl();
         route.setPath("/b/c/d?1=1&1=2");
 
-        route = route.shift();
+        route.shift();
 
-        assertNull(route.getControllerPackage());
-        assertEquals("c", route.getController());
-        assertEquals("d", route.getAction());
-        assertNull(route.getAfterAction());
-        assertTrue(route.getParameterMap().size() == 1);
-        assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
-
-        route = new RouteImpl();
-        route.setPath("/b/c/d?1=1&1=2");
-
-        route = route.shift("z");
-
-        assertEquals("z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertNull(route.getAfterAction());
@@ -348,9 +335,8 @@ public class RouteTest {
         route = new RouteImpl();
         route.setPath("/b/c/d/?1=1&1=2");
 
-        route = route.shift("z");
+        route.shift();
 
-        assertEquals("z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertEquals("", route.getAfterAction());
@@ -359,12 +345,10 @@ public class RouteTest {
 
 
         route = new RouteImpl();
-        route.setControllerPackage("a");
         route.setPath("/b/c/d/e?1=1&1=2");
 
-        route = route.shift("z");
+        route.shift();
 
-        assertEquals("a.z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertEquals("e", route.getAfterAction());
@@ -372,17 +356,55 @@ public class RouteTest {
         assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
 
         route = new RouteImpl();
-        route.setControllerPackage("a");
         route.setPath("/b/c/d/e/f?1=1&1=2");
 
-        route = route.shift("z");
+        route.shift();
 
-        assertEquals("a.z", route.getControllerPackage());
         assertEquals("c", route.getController());
         assertEquals("d", route.getAction());
         assertEquals("e/f", route.getAfterAction());
         assertTrue(route.getParameterMap().size() == 1);
         assertTrue(Arrays.equals(new String[]{"1", "2"}, route.getParameterMap().get("1")));
 
+    }
+
+    @Test
+    public void testAddSubPackage() throws Exception {
+        Route route;
+
+        route = new RouteImpl();
+        assertNull(route.getControllerPackage());
+        assertNull(route.getSubPackage());
+
+        route = new RouteImpl();
+        route.setControllerPackage("a");
+        assertEquals("a", route.getControllerPackage());
+        assertNull(route.getSubPackage());
+
+
+        route = new RouteImpl();
+        route.addSubPackage("a");
+        assertEquals("a", route.getControllerPackage());
+        assertEquals("a", route.getSubPackage());
+
+        route = new RouteImpl();
+        route.setControllerPackage("a");
+        route.addSubPackage("b");
+        assertEquals("a.b", route.getControllerPackage());
+        assertEquals("b", route.getSubPackage());
+
+        route = new RouteImpl();
+        route.setControllerPackage("a");
+        route.addSubPackage("b");
+        route.addSubPackage("c");
+        assertEquals("a.b.c", route.getControllerPackage());
+        assertEquals("b.c", route.getSubPackage());
+
+        route = new RouteImpl();
+        route.setControllerPackage("a");
+        route.setControllerPackage("b");
+        route.addSubPackage("c");
+        assertEquals("b.c", route.getControllerPackage());
+        assertEquals("c", route.getSubPackage());
     }
 }

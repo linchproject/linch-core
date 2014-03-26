@@ -30,6 +30,10 @@ public abstract class Controller {
         return new Redirect(route);
     }
 
+    protected Result dispatch()  {
+        return new Dispatch(this.route);
+    }
+
     protected Result dispatch(Route route)  {
         return new Dispatch(route);
     }

@@ -38,6 +38,12 @@ public abstract class Controller {
         return new Dispatch(route);
     }
 
+    protected Result dispatch(String path)  {
+        Route route = this.route.copy();
+        route.setPath(path);
+        return new Dispatch(route);
+    }
+
     protected Result error(String message)  {
         return new Error(message);
     }

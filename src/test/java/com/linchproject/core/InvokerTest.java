@@ -20,59 +20,43 @@ public class InvokerTest {
         Result result;
         Route route;
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/my/index");
+        route = new RouteImpl("/my/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("index", ((Success) result).getContent());
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/invalid/index");
+        route = new RouteImpl("/invalid/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Error);
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/my/invalid");
+        route = new RouteImpl("/my/invalid", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Error);
 
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/dispatcher/sub/index");
+        route = new RouteImpl("/dispatcher/sub/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("sub", ((Success) result).getContent());
 
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/dispatcher/dispatcher/subsub/index");
+        route = new RouteImpl("/dispatcher/dispatcher/subsub/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("subsub", ((Success) result).getContent());
 
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/underscore1/next/index");
+        route = new RouteImpl("/underscore1/next/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("_-_", ((Success) result).getContent());
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/underscore2/next/index");
+        route = new RouteImpl("/underscore2/next/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("next-_", ((Success) result).getContent());
 
-        route = new RouteImpl();
-        route.setControllerPackage("test.controllers");
-        route.setPath("/underscore3/next/index");
+        route = new RouteImpl("/underscore3/next/index", "test.controllers");
         result = invoker.invoke(route);
         assertTrue(result instanceof Success);
         assertEquals("next-index", ((Success) result).getContent());

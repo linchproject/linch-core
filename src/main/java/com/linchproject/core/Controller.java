@@ -25,9 +25,7 @@ public abstract class Controller {
     }
 
     protected Result redirect(String path)  {
-        Route route = this.route.copy();
-        route.setPath(path);
-        return new Redirect(route);
+        return new Redirect(route.changePath(path));
     }
 
     protected Result dispatch()  {
@@ -39,9 +37,7 @@ public abstract class Controller {
     }
 
     protected Result dispatch(String path)  {
-        Route route = this.route.copy();
-        route.setPath(path);
-        return new Dispatch(route);
+        return new Dispatch(route.changePath(path));
     }
 
     protected Result error(String message)  {

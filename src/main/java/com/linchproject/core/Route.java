@@ -3,6 +3,14 @@ package com.linchproject.core;
 import java.util.*;
 
 /**
+ * A route contains a controller package and a path. Both together define the
+ * action that will be invoked. The package defines the location of the
+ * controllers. The controller and the action will be determined from the path,
+ * which is divided into several tokens, separated by slashes. Also a current
+ * position in the path is maintained by the route. From this position, the
+ * next token is the name of the controller and the token after that the name
+ * of the action.
+ *
  * @author Georg Schmidl
  */
 public abstract class Route {
@@ -20,44 +28,69 @@ public abstract class Route {
         setPath("/");
     }
 
-    public String getControllerPackage() {
-        return controllerPackage;
+    protected Route(String path) {
+        setPath(path);
     }
 
-    public void setControllerPackage(String controllerPackage) {
+    protected Route(String path, String controllerPackage) {
+        setPath(path);
+        setControllerPackage(controllerPackage);
+    }
+
+    protected abstract Route newRoute();
+
+    protected void setControllerPackage(String controllerPackage) {
         this.controllerPackage = controllerPackage;
         this.packageRoot = this.controllerPackage != null ? controllerPackage.length() : -1;
+    }
+
+    protected void setPath(String path) {
+        this.path = normalize(path);
+        this.cursor = 0;
+    }
+
+    /**
+     * Removes trailing slashes and trialing default actions or controllers.
+     * Also adds a leading slash if it is missing.
+     *
+     * @param path path to be normalized
+     * @return the normalized path
+     */
+    private static String normalize(String path) {
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+
+        String defaultControllerAction = "/" + DEFAULT_CONTROLLER + "/" + DEFAULT_ACTION;
+        String defaultAction = "/" + DEFAULT_ACTION;
+
+        if (path.length() > 0 && path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        if (path.endsWith(defaultControllerAction)) {
+            path = path.substring(0, path.length() - defaultControllerAction.length());
+        } else if (path.endsWith(defaultAction)) {
+            path = path.substring(0, path.length() - defaultAction.length());
+        }
+
+        if (path.length() <= 0) {
+            path = "/";
+        }
+        return path;
     }
 
     public String getPath() {
         return path;
     }
 
-    /**
-     * Replaces the path with a new path. The new path can be absolute or
-     * relative. If it is absolute (starts with a slash), the old path will
-     * be replaced. If it is relative, it will be appended to the old path.
-     *
-     * @param path new path
-     */
-    public void setPath(String path) {
-        if (path.startsWith("/")) {
-            this.path = path;
-        } else if (path.equals(".")) {
-            this.path = this.path.substring(0, getLastCursor());
-        } else {
-            int lastSlash = this.path.substring(0, getLastCursor()).lastIndexOf("/");
-            boolean endsWithController = this.path.length() > 1 && this.cursor == lastSlash;
+    public String getControllerPackage() {
+        return controllerPackage;
+    }
 
-            if (endsWithController) {
-                this.path += "/" + path;
-            } else {
-                this.path = this.path.substring(0, lastSlash + 1) + path;
-            }
-        }
-
-        this.path = normalize(this.path);
-        this.cursor = 0;
+    public String getSubpackage() {
+        return controllerPackage != null && packageRoot + 1 < controllerPackage.length() ?
+                controllerPackage.substring(packageRoot + 1, controllerPackage.length()) : null;
     }
 
     public String getController() {
@@ -117,32 +150,6 @@ public abstract class Route {
         return lastCursor >= 0 ? lastCursor : path.length();
     }
 
-    /**
-     * Removes trailing slashes and trialing default actions or controllers
-     *
-     * @param path path to be normalized
-     * @return the normalized path
-     */
-    private static String normalize(String path) {
-        String defaultControllerAction = "/" + DEFAULT_CONTROLLER + "/" + DEFAULT_ACTION;
-        String defaultAction = "/" + DEFAULT_ACTION;
-
-        if (path.length() > 0 && path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
-        }
-
-        if (path.endsWith(defaultControllerAction)) {
-            path = path.substring(0, path.length() - defaultControllerAction.length());
-        } else if (path.endsWith(defaultAction)) {
-            path = path.substring(0, path.length() - defaultAction.length());
-        }
-
-        if (path.length() <= 0) {
-            path = "/";
-        }
-        return path;
-    }
-
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> parameterMap = null;
         if (getLastCursor() < path.length()) {
@@ -188,23 +195,75 @@ public abstract class Route {
         return isSameController(route) && getAction().equals(route.getAction());
     }
 
-    public void shift() {
-        int nextCursor = getNextCursor();
-        if (nextCursor >= 0) {
-            cursor = nextCursor;
+    /**
+     * Replaces the path with a new path. The new path can be absolute or
+     * relative. If it is absolute (starts with a slash), the old path will
+     * be replaced. If it is relative, it will be appended to the old path.
+     *
+     * @param path new path
+     * @return a new route with the new path
+     */
+    public Route changePath(String path) {
+        Route route = copy();
+
+        if (path.equals(".")) {
+            path = route.path.substring(0, getLastCursor());
+        } else if (!path.startsWith("/")) {
+            int lastSlash = route.path.substring(0, getLastCursor()).lastIndexOf("/");
+            boolean endsWithController = route.path.length() > 1 && route.cursor == lastSlash;
+
+            if (endsWithController) {
+                path = route.path + "/" + path;
+            } else {
+                path = route.path.substring(0, lastSlash + 1) + path;
+            }
         }
+        route.setPath(path);
+        return route;
     }
 
-    public void addSubPackage(String subPackage) {
-        controllerPackage = controllerPackage != null ? controllerPackage + "." + subPackage : subPackage;
+    /**
+     * Shifts the current path position by one to the right. That means that what
+     * was the action name is now the controller name and the next token is the
+     * action.
+     *
+     * @return a new route with the shifted position
+     */
+    public Route shift() {
+        Route route = copy();
+        int nextCursor = route.getNextCursor();
+        if (nextCursor >= 0) {
+            route.cursor = nextCursor;
+        }
+        return route;
     }
 
-    public String getSubPackage() {
-        return controllerPackage != null && packageRoot + 1 < controllerPackage.length() ?
-                controllerPackage.substring(packageRoot + 1, controllerPackage.length()) : null;
+    /**
+     * Replaces the controller package.
+     *
+     * @param controllerPackage new controller package
+     * @return a new route with the new controller package
+     */
+    public Route changeControllerPackage(String controllerPackage) {
+        Route route = copy();
+        route.controllerPackage = controllerPackage;
+        return route;
     }
 
-    public Route copy() {
+    /**
+     * Adds a subpackage to the current package.
+     *
+     * @param subpackage subpackage to be added
+     * @return a new route with the added subpackage
+     */
+    public Route addSubpackage(String subpackage) {
+        Route route = copy();
+        route.controllerPackage = route.controllerPackage != null ?
+                route.controllerPackage + "." + subpackage : subpackage;
+        return route;
+    }
+
+    private Route copy() {
         Route route = newRoute();
         route.controllerPackage = controllerPackage;
         route.packageRoot = packageRoot;
@@ -212,8 +271,6 @@ public abstract class Route {
         route.cursor = cursor;
         return route;
     }
-
-    protected abstract Route newRoute();
 
     public abstract String getUrl();
 }

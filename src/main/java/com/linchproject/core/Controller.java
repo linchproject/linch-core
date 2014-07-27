@@ -48,14 +48,6 @@ public abstract class Controller {
         return new Error(message);
     }
 
-    public void init() {
-
-    }
-
-    public void destroy() {
-
-    }
-
     public void setRoute(Route route) {
         this.route = route;
     }

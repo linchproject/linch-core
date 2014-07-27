@@ -88,14 +88,6 @@ public class Invoker {
                 result = invoke(route);
             } else if (result instanceof Dispatch) {
                 result = invoke(((Dispatch) result).getRoute());
-            } else {
-                for (Object controllerInstance : controllerInstances.values()) {
-                    try {
-                        invokeMethod(controllerInstance, "destroy");
-                    } catch (InvocationException e) {
-                        result = new Error(e.getMessage(), e);
-                    }
-                }
             }
 
             return result;
@@ -165,12 +157,10 @@ public class Invoker {
                 Result result;
 
                 try {
-                    boolean init = false;
                     Object controllerInstance = controllerInstances.get(controllerClass);
                     if (controllerInstance == null) {
                         controllerInstance = controllerClass.newInstance();
                         controllerInstances.put(controllerClass, controllerInstance);
-                        init = true;
                     }
 
                     try {
@@ -190,10 +180,6 @@ public class Invoker {
                         } catch (Exception e) {
                             throw new InvocationException("Error injecting '" + controllerClass.getName() + "'", e);
                         }
-                    }
-
-                    if (init) {
-                        invokeMethod(controllerInstance, "init");
                     }
 
                     try {

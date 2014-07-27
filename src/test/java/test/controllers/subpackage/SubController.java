@@ -1,15 +1,16 @@
 package test.controllers.subpackage;
 
 import com.linchproject.core.Controller;
-import com.linchproject.core.Params;
 import com.linchproject.core.Result;
+import com.linchproject.core.actions.IndexAction;
 
 /**
  * @author Georg Schmidl
  */
-public class SubController extends Controller {
+public class SubController extends Controller implements IndexAction {
 
-    public Result index(Params params) {
+    @Override
+    public Result indexAction() {
         return success("sub");
     }
 }

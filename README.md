@@ -4,7 +4,7 @@
 
     public class HelloWorldController extends Controller {
 
-        Result index(Params params) {
+        public Result indexAction() {
             return success("Hello World");
         }
     }

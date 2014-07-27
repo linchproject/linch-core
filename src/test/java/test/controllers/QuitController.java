@@ -3,19 +3,21 @@ package test.controllers;
 import com.linchproject.core.Controller;
 import com.linchproject.core.Params;
 import com.linchproject.core.Result;
+import com.linchproject.core.actions.IndexAction;
 import test.Trail;
 
 /**
  * @author Georg Schmidl
  */
-public class QuitController extends Controller {
+public class QuitController extends Controller implements IndexAction {
 
     @Override
     public void destroy() {
         Trail.append("a");
     }
 
-    public Result index(Params params) {
+    @Override
+    public Result indexAction() {
         return success("a");
     }
 

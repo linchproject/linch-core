@@ -107,7 +107,7 @@ public class Invoker {
             try {
                 Class<?> controllerClass = classLoader.loadClass(controllerClassName);
                 invocation.setControllerClass(controllerClass);
-                Method actionMethod = controllerClass.getMethod(action, Params.class);
+                Method actionMethod = controllerClass.getMethod(action + "Action");
                 invocation.setActionMethod(actionMethod);
             } catch (ClassNotFoundException e) {
                 // ok
@@ -197,7 +197,7 @@ public class Invoker {
                     }
 
                     try {
-                        result = (Result) actionMethod.invoke(controllerInstance, new Params(route.getParameterMap()));
+                        result = (Result) actionMethod.invoke(controllerInstance);
                     } catch (IllegalAccessException e) {
                         throw new InvocationException("Cannot access '" + controllerClass.getName() + "#" + actionMethod.getName() + "'", e);
                     } catch (InvocationTargetException e) {

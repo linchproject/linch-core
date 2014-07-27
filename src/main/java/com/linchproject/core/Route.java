@@ -171,6 +171,10 @@ public abstract class Route {
         return parameterMap == null ? Collections.<String, String[]>emptyMap() : parameterMap;
     }
 
+    public Params getParams() {
+        return new Params(getParameterMap());
+    }
+
     public boolean isSamePackage(Route route) {
         return controllerPackage == null ? route.controllerPackage == null :
                 controllerPackage.equals(route.controllerPackage);

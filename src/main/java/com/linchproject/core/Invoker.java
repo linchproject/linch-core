@@ -116,19 +116,6 @@ public class Invoker {
                     + "Controller";
         }
 
-        private void invokeMethod(Object controllerInstance, String methodName) throws InvocationException {
-            try {
-                Method method = controllerInstance.getClass().getMethod(methodName);
-                method.invoke(controllerInstance);
-            } catch (NoSuchMethodException e) {
-                // ok
-            } catch (IllegalAccessException e) {
-                // ok
-            } catch (InvocationTargetException e) {
-                throw new InvocationException("Error invoking'" + controllerInstance.getClass().getName() + "#" + methodName + "'", e);
-            }
-        }
-
         public class Invocation {
             private Class<?> controllerClass;
             private Method actionMethod;

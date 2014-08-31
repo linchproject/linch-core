@@ -1,4 +1,4 @@
-# linch-core
+# linch-core [![Build Status](https://travis-ci.org/linchproject/linch-core.svg)](https://travis-ci.org/linchproject/linch-core)
 
 ## Example controller
 
